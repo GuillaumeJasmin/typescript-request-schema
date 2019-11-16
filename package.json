@@ -1,0 +1,23 @@
+{
+  "name": "axios-schema",
+  "version": "1.0.0",
+  "description": "",
+  "main": "build/index.js",
+  "scripts": {
+    "build": "rm -rf build && tsc -p tsconfig.build.json",
+    "test": "npx jest",
+    "release-patch": "npm version patch",
+    "release-minor": "npm version minor",
+    "release-major": "npm version major"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jest": "^24.0.23",
+    "axios": "^0.19.0",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.1.0",
+    "typescript": "^3.7.2"
+  },
+  "author": "Guillaume Jasmin",
+  "license": "ISC"
+}
