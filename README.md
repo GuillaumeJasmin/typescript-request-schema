@@ -23,6 +23,8 @@
 
 Axios Schema make possible to define your schema in one place and then use `axios.request()` without the need to type output for each request. It also add new types like `urlParams`, `params` and `data`.
 
+`schema` object is a mix of plain JavaScript and TypeScript definition. That is possible with the powerful `as` keyword.
+
 ## Example
 
 ```js
@@ -61,14 +63,31 @@ const schema = {
 
 const api = createAxiosTSInstance({ baseURL: '...' }, schema)
 
-const users = await api.request({
+// GET
+const user = await api.request({
   routeName: 'GET users',
-  urlParams: {
+  params: {
     page: 1,
-    pageSize: 10,
+    pageSize: 10
   },
 })
+
+// PATCH
+const user = await api.request({
+  routeName: 'PATCH users/:id',
+  urlParams: {
+    id: '1'
+  },
+  data: {
+    username: 'John Doe'
+  }
+})
 ```
+
+Properties `url` and `method` are used as JavaScript value
+
+
+Properties `params`, `data`, `response` and `url(params)` are used as TypeScript definition.
 
 ## TypeScript IntelliSense
 
@@ -89,11 +108,11 @@ const users = await api.request({
 
 ## Things to know
 
-### Required and Omited request properties
+### Required and omited request properties
 `axios-schema` required 2 new properties on axios request config and omit 2 others.
 
-It required:
-  * `routeName` - use to get correct config
+It require:
+  * `routeName` - use to get route config and definition
   * `urlParams` - object with params for url
 
 It omit:
@@ -105,6 +124,10 @@ Theses 2 keys are already define in the schema
 ### Schema keys names
 
 Each keys of the `schema` object can be named like you want. In examples, names are `GET users`, `GET users/:id`, but you can named it `GET_users`, `users get`, `retrieve users`, `update users/id`, etc. Keys are use by TypeScript to find the correct route schema, so it's completely arbitrary
+
+## `url`, `urlParams` and `method`
+
+Theses properties are handled by an [axios interceptor](src/addAxiosTsInterceptor.ts) in order to convert schema route to plain axios config.
 
 
 ## Under the hood
