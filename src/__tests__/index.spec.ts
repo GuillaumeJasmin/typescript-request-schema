@@ -46,6 +46,26 @@ const schema = {
   },
 }
 
+let request: any;
+
+beforeEach(() => {
+  let interceptor: Function;
+  request = jest.fn((config) => {
+    return interceptor(config)
+  })
+
+  axios.create = jest.fn(() => ({
+    request,
+    interceptors: {
+      request: {
+        use: (inter: typeof interceptor) => {
+          interceptor = inter
+        }
+      }
+    }
+  }) as any)
+})
+
 describe('Axios TS', () => {
   it('Should return axios instance', () => {
     const api = createAxiosTSInstance({ baseURL: 'http://api.com' }, schema)
@@ -54,22 +74,6 @@ describe('Axios TS', () => {
   })
 
   it('Should handle config params', () => {
-    let interceptor: Function;
-    const request = jest.fn((config) => {
-      return interceptor(config)
-    })
-
-    axios.create = jest.fn(() => ({
-      request,
-      interceptors: {
-        request: {
-          use: (inter: typeof interceptor) => {
-            interceptor = inter
-          }
-        }
-      }
-    }) as any)
-
     const api = createAxiosTSInstance({ baseURL: 'http://api.com' }, schema)
 
     api.request({

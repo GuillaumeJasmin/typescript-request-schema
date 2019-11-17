@@ -4,15 +4,14 @@ export function addAxiosTsInterceptor(api: AxiosTSInstance<'', {}>, schema: Sche
   // @ts-ignore
   api.interceptors.request.use((config: AxiosRequestConfigBase) => {
     const { routeName, urlParams, ...restConfig } = config
-    const urlAsFunction = schema[routeName].url
-    const { method } = schema[routeName]
-
-    // @ts-ignore
-    const url = urlAsFunction(config.urlParams)
+    const { url, method } = schema[routeName]
+    const finalURL = typeof url === 'function'
+      ? url(config.urlParams)
+      : url;
 
     return {
       ...restConfig,
-      url,
+      url: finalURL,
       method,
     }
   })
