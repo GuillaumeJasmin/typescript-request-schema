@@ -1,12 +1,12 @@
 <div align="center">
   <h1>
-    Axios Schema
+    Axios TypeScript Schema
     <br/>
     <br/>
   </h1>
     <br/>
-    <a href="https://www.npmjs.com/package/axios-schema">
-      <img src="https://img.shields.io/npm/v/axios-schema.svg" alt="npm package" />
+    <a href="https://www.npmjs.com/package/axios-ts-schema">
+      <img src="https://img.shields.io/npm/v/axios-ts-schema.svg" alt="npm package" />
     </a>
     <br/>
     <br/>
@@ -15,20 +15,25 @@
     <br/>
   <br/>
   <br/>
-  <pre>npm i <a href="https://www.npmjs.com/package/react-resources-store">axios-schema</a></pre>
+  <pre>npm i <a href="https://www.npmjs.com/package/react-resources-store">axios-ts-schema</a></pre>
   <br/>
   <br/>
 </div>
 
+* [Example](#example)
+* [TypeScript IntelliSense](#typeScript-intellisense)
+* [Things to know](#things-to-know)
+* :warning: [Axios compatibility version](#warning-axios-compatibility-version)
+* [Under the hood](#under-the-hood)
 
-Axios Schema make possible to define your schema in one place and then use `axios.request()` without the need to type output for each request. It also add new types like `urlParams`, `params` and `data`.
+Axios TS Schema make possible to define your schema in one place and then use `axios.request()` without the need to type output for each request. It also add new types like `urlParams`, `params` and `data`.
 
 `schema` object is a mix of plain JavaScript and TypeScript definition. That is possible with the powerful `as` keyword.
 
 ## Example
 
 ```js
-import { createAxiosTSInstance } from 'axios-schema'
+import { createAxiosTSInstance } from 'axios-ts-schema'
 
 const schema = {
   'GET users': {
@@ -109,7 +114,7 @@ Properties `params`, `data`, `response` and `url(params)` are used as TypeScript
 ## Things to know
 
 ### Required and omited request properties
-`axios-schema` required 2 new properties on axios request config and omit 2 others.
+`axios-ts-schema` required 2 new properties on axios request config and omit 2 others.
 
 It require:
   * `routeName` - use to get route config and definition
@@ -129,6 +134,11 @@ Each keys of the `schema` object can be named like you want. In examples, names 
 
 Theses properties are handled by an [axios interceptor](src/addAxiosTsInterceptor.ts) in order to convert schema route to plain axios config.
 
+## :warning: Axios compatibility version
+
+Not compatible with `axios@0.19.x` due to breaking changes with custom config, see [axios/issues/1718](https://github.com/axios/axios/issues/1718).   
+
+Use axios `axios@0.18.x` instead
 
 ## Under the hood
 

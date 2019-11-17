@@ -1,6 +1,6 @@
 {
-  "name": "axios-schema",
-  "version": "1.0.0",
+  "name": "axios-ts-schema",
+  "version": "0.1.0",
   "description": "",
   "main": "build/index.js",
   "scripts": {
@@ -13,11 +13,11 @@
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^24.0.23",
-    "axios": "^0.19.0",
+    "axios": "^0.18.1",
     "jest": "^24.9.0",
     "ts-jest": "^24.1.0",
     "typescript": "^3.7.2"
   },
   "author": "Guillaume Jasmin",
-  "license": "ISC"
+  "license": "MIT"
 }
