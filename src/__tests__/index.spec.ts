@@ -1,10 +1,10 @@
-import axios, { Method } from 'axios'
+import axios from 'axios'
 import { createAxiosTSInstance, valid } from '../index'
 
 const schema = {
   'GET users': {
     url: 'users',
-    method: 'GET' as Method,
+    method: 'GET',
     params: {} as null | {
       page?: number,
       pageSize?: number
@@ -18,7 +18,7 @@ const schema = {
   },
   'POST users': {
     url: 'users',
-    method: 'POST' as Method,
+    method: 'POST',
     params: null,
     data: {} as {
       username: string,
@@ -32,7 +32,7 @@ const schema = {
   },
   'PATCH users/:id': {
     url: (params: { id: string }) => `users/${params.id}`,
-    method: 'PATCH' as Method,
+    method: 'PATCH',
     params: null,
     data: {} as {
       username?: string,
@@ -111,7 +111,7 @@ describe('Axios TS', () => {
     const api1 = createAxiosTSInstance({}, {
       'GET users': {
         url: 'users',
-        method: 'GET' as Method,
+        method: 'GET',
       },
     })
 
@@ -139,7 +139,7 @@ describe('Axios TS', () => {
     const api2 = createAxiosTSInstance({}, {
       'GET users': {
         url: 'users',
-        method: 'GET' as Method,
+        method: 'GET',
         params: {} as {
           page: string
         }
@@ -185,7 +185,7 @@ describe('Axios TS', () => {
     const api3 = createAxiosTSInstance({}, {
       'GET users': {
         url: 'users',
-        method: 'GET' as Method,
+        method: 'GET',
         params: {} as null | {
           page?: string
         }
@@ -230,7 +230,7 @@ describe('Axios TS', () => {
     const api4 = createAxiosTSInstance({}, {
       'GET users': {
         url: 'users',
-        method: 'GET' as Method,
+        method: 'GET',
         params: {} as null | {
           page: string
         }
@@ -275,7 +275,7 @@ describe('Axios TS', () => {
     const api5 = createAxiosTSInstance({}, {
       'GET users': {
         url: 'users',
-        method: 'GET' as Method,
+        method: 'GET',
       },
     })
 
@@ -301,7 +301,7 @@ describe('Axios TS', () => {
     const api6 = createAxiosTSInstance({}, {
       'GET users': {
         url: () => 'users',
-        method: 'GET' as Method,
+        method: 'GET',
       },
     })
 
@@ -327,7 +327,7 @@ describe('Axios TS', () => {
     const api7 = createAxiosTSInstance({}, {
       'GET users': {
         url: (params: { id: string }) => `users/${params.id}`,
-        method: 'GET' as Method,
+        method: 'GET',
       },
     })
 
