@@ -46,6 +46,8 @@ const schema = {
   },
 }
 
+// valid(schema)
+
 let request: any;
 
 beforeEach(() => {
@@ -105,262 +107,261 @@ describe('Axios TS', () => {
     })
   })
 
-  // only use to check if TypeScript works, no runtime necessary 
-  // it.skip('', () => {
-  //   const api1 = createAxiosTSInstance({}, {
-  //     'GET users': {
-  //       url: 'users',
-  //       method: 'GET' as Method,
-  //     },
-  //   })
+  it('Should TypeScript def works', () => {
+    const api1 = createAxiosTSInstance({}, {
+      'GET users': {
+        url: 'users',
+        method: 'GET' as Method,
+      },
+    })
 
-  //   // should works
-  //   api1.request({
-  //     routeName: 'GET users',
-  //   })
+    // should works
+    api1.request({
+      routeName: 'GET users',
+    })
 
-  //   // should works
-  //   api1.request({
-  //     routeName: 'GET users',
-  //     params: null
-  //   })
+    // should works
+    api1.request({
+      routeName: 'GET users',
+      params: null
+    })
 
-  //   // should failed
-  //   api1.request({
-  //     routeName: 'GET users',
-  //     params: {
-  //       page: '1'
-  //     }
-  //   })
+    // should failed
+    // api1.request({
+    //   routeName: 'GET users',
+    //   params: {
+    //     page: '1'
+    //   }
+    // })
 
-  //   // -------
+    // -------
 
-  //   const api2 = createAxiosTSInstance({}, {
-  //     'GET users': {
-  //       url: 'users',
-  //       method: 'GET' as Method,
-  //       params: {} as {
-  //         page: string
-  //       }
-  //     },
-  //   })
+    const api2 = createAxiosTSInstance({}, {
+      'GET users': {
+        url: 'users',
+        method: 'GET' as Method,
+        params: {} as {
+          page: string
+        }
+      },
+    })
 
-  //   // should works
-  //   api2.request({
-  //     routeName: 'GET users',
-  //     params: {
-  //       page: '1'
-  //     }
-  //   })
+    // should works
+    api2.request({
+      routeName: 'GET users',
+      params: {
+        page: '1'
+      }
+    })
 
-  //   // should failed
-  //   api2.request({
-  //     routeName: 'GET users',
-  //   })
+    // should failed
+    // api2.request({
+    //   routeName: 'GET users',
+    // })
     
-  //   // should failed
-  //   api2.request({
-  //     routeName: 'GET users',
-  //     params: {}
-  //   })
+    // should failed
+    // api2.request({
+    //   routeName: 'GET users',
+    //   params: {}
+    // })
 
-  //   // should failed
-  //   api2.request({
-  //     routeName: 'GET users',
-  //     params: null
-  //   })
+    // should failed
+    // api2.request({
+    //   routeName: 'GET users',
+    //   params: null
+    // })
 
-  //   // should failed
-  //   api2.request({
-  //     routeName: 'GET users',
-  //     params: {
-  //       page: '1',
-  //       pageSize: 2,
-  //     }
-  //   })
+    // should failed
+    // api2.request({
+    //   routeName: 'GET users',
+    //   params: {
+    //     page: '1',
+    //     pageSize: 2,
+    //   }
+    // })
 
-  //   // ---------
+    // ---------
 
-  //   const api3 = createAxiosTSInstance({}, {
-  //     'GET users': {
-  //       url: 'users',
-  //       method: 'GET' as Method,
-  //       params: {} as null | {
-  //         page?: string
-  //       }
-  //     },
-  //   })
+    const api3 = createAxiosTSInstance({}, {
+      'GET users': {
+        url: 'users',
+        method: 'GET' as Method,
+        params: {} as null | {
+          page?: string
+        }
+      },
+    })
 
-  //   // should works
-  //   api3.request({
-  //     routeName: 'GET users',
-  //   })
+    // should works
+    api3.request({
+      routeName: 'GET users',
+    })
 
-  //   // should works
-  //   api3.request({
-  //     routeName: 'GET users',
-  //     params: null,
-  //   })
+    // should works
+    api3.request({
+      routeName: 'GET users',
+      params: null,
+    })
     
-  //   // should works
-  //   api3.request({
-  //     routeName: 'GET users',
-  //     params: {}
-  //   })
+    // should works
+    api3.request({
+      routeName: 'GET users',
+      params: {}
+    })
 
-  //   // should works
-  //   api3.request({
-  //     routeName: 'GET users',
-  //     params: {
-  //       page: '1'
-  //     }
-  //   })
+    // should works
+    api3.request({
+      routeName: 'GET users',
+      params: {
+        page: '1'
+      }
+    })
 
-  //   // should failed
-  //   api3.request({
-  //     routeName: 'GET users',
-  //     params: {
-  //       page: '1'
-  //       pageSize: '2'
-  //     }
-  //   })
+    // should failed
+    // api3.request({
+    //   routeName: 'GET users',
+    //   params: {
+    //     page: '1',
+    //     pageSize: '2'
+    //   }
+    // })
 
-  //   // ------------
-  //   const api4 = createAxiosTSInstance({}, {
-  //     'GET users': {
-  //       url: 'users',
-  //       method: 'GET' as Method,
-  //       params: {} as null | {
-  //         page: string
-  //       }
-  //     },
-  //   })
+    // ------------
+    const api4 = createAxiosTSInstance({}, {
+      'GET users': {
+        url: 'users',
+        method: 'GET' as Method,
+        params: {} as null | {
+          page: string
+        }
+      },
+    })
 
-  //   // should works
-  //   api4.request({
-  //     routeName: 'GET users',
-  //   })
+    // should works
+    api4.request({
+      routeName: 'GET users',
+    })
 
-  //   // should works
-  //   api4.request({
-  //     routeName: 'GET users',
-  //     params: null
-  //   })
+    // should works
+    api4.request({
+      routeName: 'GET users',
+      params: null
+    })
 
-  //   // should works
-  //   api4.request({
-  //     routeName: 'GET users',
-  //     params: {
-  //       page: '1'
-  //     }
-  //   })
+    // should works
+    api4.request({
+      routeName: 'GET users',
+      params: {
+        page: '1'
+      }
+    })
     
-  //   // should failed
-  //   api4.request({
-  //     routeName: 'GET users',
-  //     params: {}
-  //   })
+    // should failed
+    // api4.request({
+    //   routeName: 'GET users',
+    //   params: {}
+    // })
 
-  //   // should failed
-  //   api4.request({
-  //     routeName: 'GET users',
-  //     params: {
-  //       page: '1'
-  //       pageSize: '2'
-  //     }
-  //   })
+    // should failed
+    // api4.request({
+    //   routeName: 'GET users',
+    //   params: {
+    //     page: '1',
+    //     pageSize: '2'
+    //   }
+    // })
 
   // ----------
-  //   const api5 = createAxiosTSInstance({}, {
-  //     'GET users': {
-  //       url: 'users',
-  //       method: 'GET' as Method,
-  //     },
-  //   })
+    const api5 = createAxiosTSInstance({}, {
+      'GET users': {
+        url: 'users',
+        method: 'GET' as Method,
+      },
+    })
 
-  //   // should works
-  //   api5.request({
-  //     routeName: 'GET users',
-  //   })
+    // should works
+    api5.request({
+      routeName: 'GET users',
+    })
 
-  //   // should works
-  //   api5.request({
-  //     routeName: 'GET users',
-  //     urlParams: null
-  //   })
+    // should works
+    api5.request({
+      routeName: 'GET users',
+      urlParams: null
+    })
 
-  //   // should failed
-  //   api5.request({
-  //     routeName: 'GET users',
-  //     urlParams: {}
-  //   })
+    // should failed
+    // api5.request({
+    //   routeName: 'GET users',
+    //   urlParams: {}
+    // })
 
-  //   // --------
+    // --------
 
-  //   const api6 = createAxiosTSInstance({}, {
-  //     'GET users': {
-  //       url: () => 'users',
-  //       method: 'GET' as Method,
-  //     },
-  //   })
+    const api6 = createAxiosTSInstance({}, {
+      'GET users': {
+        url: () => 'users',
+        method: 'GET' as Method,
+      },
+    })
 
-  //   // should works
-  //   api6.request({
-  //     routeName: 'GET users',
-  //   })
+    // should works
+    api6.request({
+      routeName: 'GET users',
+    })
 
-  //   // should works
-  //   api6.request({
-  //     routeName: 'GET users',
-  //     urlParams: null
-  //   })
+    // should works
+    api6.request({
+      routeName: 'GET users',
+      urlParams: null
+    })
 
-  //   // should failed
-  //   api6.request({
-  //     routeName: 'GET users',
-  //     urlParams: {}
-  //   })
+    // should failed
+    // api6.request({
+    //   routeName: 'GET users',
+    //   urlParams: {}
+    // })
 
-  //   // --------
+    // --------
 
-  //   const api7 = createAxiosTSInstance({}, {
-  //     'GET users': {
-  //       url: (params: { id: string }) => `users/${id}`,
-  //       method: 'GET' as Method,
-  //     },
-  //   })
+    const api7 = createAxiosTSInstance({}, {
+      'GET users': {
+        url: (params: { id: string }) => `users/${params.id}`,
+        method: 'GET' as Method,
+      },
+    })
 
-  //   // should works
-  //   api7.request({
-  //     routeName: 'GET users',
-  //     urlParams: {
-  //       id: '2'
-  //     }
-  //   })
+    // should works
+    api7.request({
+      routeName: 'GET users',
+      urlParams: {
+        id: '2'
+      }
+    })
 
-  //   // should failed
-  //   api7.request({
-  //     routeName: 'GET users',
-  //     urlParams: {
-  //       id: 2
-  //     }
-  //   })
+    // should failed
+    // api7.request({
+    //   routeName: 'GET users',
+    //   urlParams: {
+    //     id: 2
+    //   }
+    // })
 
-  //   // should failed
-  //   api7.request({
-  //     routeName: 'GET users',
-  //   })
+    // should failed
+    // api7.request({
+    //   routeName: 'GET users',
+    // })
 
-  //   // should failed
-  //   api7.request({
-  //     routeName: 'GET users',
-  //     urlParams: null
-  //   })
+    // should failed
+    // api7.request({
+    //   routeName: 'GET users',
+    //   urlParams: null
+    // })
 
-  //   // should failed
-  //   api7.request({
-  //     routeName: 'GET users',
-  //     urlParams: {}
-  //   })
-  // })
+    // should failed
+    // api7.request({
+    //   routeName: 'GET users',
+    //   urlParams: {}
+    // })
+  })
 })

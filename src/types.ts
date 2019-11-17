@@ -2,12 +2,12 @@ import axios, { AxiosPromise, AxiosRequestConfig, AxiosInstance, Method } from '
 
 export interface Schema {
   [key: string]: {
-    url: (params?: { [key: string]: string | number }) => string,
+    url: string | ((params: { [key: string]: string | number }) => string),
     method: Method,
-    params: null | {
+    params?: null | {
       [key: string]: any
     },
-    data: void | {
+    data?: null | {
       [key: string]: any
     },
     response: void | {
