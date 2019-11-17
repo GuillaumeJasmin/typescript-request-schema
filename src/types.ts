@@ -1,4 +1,4 @@
-import axios, { AxiosPromise, AxiosRequestConfig, AxiosInstance, Method } from 'axios'
+import { AxiosPromise, AxiosRequestConfig, AxiosInstance, Method } from 'axios'
 
 export interface Schema {
   [key: string]: {
@@ -40,18 +40,17 @@ type GetType<Key extends string, SchemaAPI extends any> = SchemaAPI[Key]
 // @ts-ignore
 type GetURLParams<Key extends string, SchemaAPI extends any> = Parameters<GetType<Key, SchemaAPI>['url']>[0]
 
-type RouteName<Key extends string, SchemaAPI extends any> = {
+type RouteName<Key extends string> = {
   routeName: Key
 }
 
 type AxiosRequestConfigFinal<Key extends string, SchemaAPI extends any> =
   Omit<AxiosRequestConfig, 'url' | 'params' | 'data'>
-  & RouteName<Key, SchemaAPI>
+  & RouteName<Key>
   & URLParams<Key, SchemaAPI>
   & Data<Key, SchemaAPI>
   & Params<Key, SchemaAPI>
 
-// @ts-ignore
-export interface AxiosTSInstance<SchemaKeys extends string, SchemaAPI extends Schema> extends AxiosInstance {
+export interface AxiosTSInstance<SchemaKeys extends string, SchemaAPI extends Schema> extends Omit<AxiosInstance, 'request'> {
   request: <Key extends SchemaKeys>(config: AxiosRequestConfigFinal<Key, SchemaAPI>) => AxiosPromise<SchemaAPI[Key]['response']>
 }
