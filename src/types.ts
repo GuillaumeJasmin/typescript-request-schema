@@ -4,7 +4,7 @@ export interface Schema {
   [key: string]: {
     url: (params?: { [key: string]: string | number }) => string,
     method: Method,
-    params: void | {
+    params: null | {
       [key: string]: any
     },
     data: void | {
@@ -16,36 +16,40 @@ export interface Schema {
   }
 }
 
+type Params<Key extends string, SchemaAPI extends any> =
+  GetType<Key, SchemaAPI>['params'] extends object
+    ? { params: GetType<Key, SchemaAPI>['params'] }
+    : GetType<Key, SchemaAPI>['params'] extends (void | null | object)
+      ? { params?: GetType<Key, SchemaAPI>['params'] }
+      : { params?: null }
+
+type Data<Key extends string, SchemaAPI extends any> =
+  GetType<Key, SchemaAPI>['data'] extends object
+    ? { data: GetType<Key, SchemaAPI>['data'] }
+    : GetType<Key, SchemaAPI>['data'] extends (void | null | object)
+      ? { data?: GetType<Key, SchemaAPI>['data'] }
+      : { data?: null }
+
+type URLParams<Key extends string, SchemaAPI extends any> =
+  GetURLParams<Key, SchemaAPI> extends object
+    ? { urlParams: GetURLParams<Key, SchemaAPI> }
+    : { urlParams?: null }
+
 type Parameters<T> = T extends (...args: infer T) => any ? T : null;
 type GetType<Key extends string, SchemaAPI extends any> = SchemaAPI[Key]
 // @ts-ignore
 type GetURLParams<Key extends string, SchemaAPI extends any> = Parameters<GetType<Key, SchemaAPI>['url']>[0]
 
-interface AxiosRequestConfigBase<Key extends string = '', SchemaAPI extends any = {}> extends Omit<AxiosRequestConfig, 'url'> {
+type RouteName<Key extends string, SchemaAPI extends any> = {
   routeName: Key
-  urlParams: GetURLParams<Key, SchemaAPI>
-  params: GetType<Key, SchemaAPI>['params'];
-  data: GetType<Key, SchemaAPI>['data']
 }
 
-type OmitVoidKeys<Key extends string, SchemaAPI extends any, Acc extends AxiosRequestConfigBase<Key, SchemaAPI>> =
-  GetType<Key, SchemaAPI>['params'] extends null
-    ? GetType<Key, SchemaAPI>['data'] extends null
-      ? GetURLParams<Key, SchemaAPI> extends void
-        ? Omit<Acc, 'params' | 'data' | 'urlParams'>
-        : Omit<Acc, 'params' | 'data'>
-      : GetURLParams<Key, SchemaAPI> extends void
-        ? Omit<Acc, 'params' | 'urlParams'>
-        : Omit<Acc, 'params'>
-    : GetType<Key, SchemaAPI>['data'] extends null
-      ? GetURLParams<Key, SchemaAPI> extends void
-        ? Omit<Acc, 'data' | 'urlParams'>
-        : Omit<Acc, 'data'>
-      : GetURLParams<Key, SchemaAPI> extends void
-        ? Omit<Acc, 'urlParams'>
-        : Acc
-
-type AxiosRequestConfigFinal<Key extends string, SchemaAPI extends any> = OmitVoidKeys<Key, SchemaAPI, AxiosRequestConfigBase<Key, SchemaAPI>>
+type AxiosRequestConfigFinal<Key extends string, SchemaAPI extends any> =
+  Omit<AxiosRequestConfig, 'url' | 'params' | 'data'>
+  & RouteName<Key, SchemaAPI>
+  & URLParams<Key, SchemaAPI>
+  & Data<Key, SchemaAPI>
+  & Params<Key, SchemaAPI>
 
 // @ts-ignore
 export interface AxiosTSInstance<SchemaKeys extends string, SchemaAPI extends Schema> extends AxiosInstance {
