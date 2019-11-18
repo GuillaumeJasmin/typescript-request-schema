@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { createAxiosTSInstance, valid } from '../index'
+import { createAxiosInstance, valid } from '../index'
 
 const schema = {
   'GET users': {
@@ -70,13 +70,13 @@ beforeEach(() => {
 
 describe('Axios TS', () => {
   it('Should return axios instance', () => {
-    const api = createAxiosTSInstance({ baseURL: 'http://api.com' }, schema)
+    const api = createAxiosInstance({ baseURL: 'http://api.com' }, schema)
 
     expect(api.request).toBeDefined()
   })
 
   it('Should handle config params', () => {
-    const api = createAxiosTSInstance({ baseURL: 'http://api.com' }, schema)
+    const api = createAxiosInstance({ baseURL: 'http://api.com' }, schema)
 
     api.request({
       routeName: 'PATCH users/:id',
@@ -108,7 +108,7 @@ describe('Axios TS', () => {
   })
 
   it('Should TypeScript def works', () => {
-    const api1 = createAxiosTSInstance({}, {
+    const api1 = createAxiosInstance({}, {
       'GET users': {
         url: 'users',
         method: 'GET',
@@ -136,7 +136,7 @@ describe('Axios TS', () => {
 
     // -------
 
-    const api2 = createAxiosTSInstance({}, {
+    const api2 = createAxiosInstance({}, {
       'GET users': {
         url: 'users',
         method: 'GET',
@@ -182,7 +182,7 @@ describe('Axios TS', () => {
 
     // ---------
 
-    const api3 = createAxiosTSInstance({}, {
+    const api3 = createAxiosInstance({}, {
       'GET users': {
         url: 'users',
         method: 'GET',
@@ -227,7 +227,7 @@ describe('Axios TS', () => {
     // })
 
     // ------------
-    const api4 = createAxiosTSInstance({}, {
+    const api4 = createAxiosInstance({}, {
       'GET users': {
         url: 'users',
         method: 'GET',
@@ -272,7 +272,7 @@ describe('Axios TS', () => {
     // })
 
   // ----------
-    const api5 = createAxiosTSInstance({}, {
+    const api5 = createAxiosInstance({}, {
       'GET users': {
         url: 'users',
         method: 'GET',
@@ -298,7 +298,7 @@ describe('Axios TS', () => {
 
     // --------
 
-    const api6 = createAxiosTSInstance({}, {
+    const api6 = createAxiosInstance({}, {
       'GET users': {
         url: () => 'users',
         method: 'GET',
@@ -324,7 +324,7 @@ describe('Axios TS', () => {
 
     // --------
 
-    const api7 = createAxiosTSInstance({}, {
+    const api7 = createAxiosInstance({}, {
       'GET users': {
         url: (params: { id: string }) => `users/${params.id}`,
         method: 'GET',

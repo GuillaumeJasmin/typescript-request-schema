@@ -1,21 +1,26 @@
 <div align="center">
   <h1>
-    Axios TypeScript Schema
+    Request Schema
     <br/>
     <br/>
   </h1>
     <br/>
-    <a href="https://www.npmjs.com/package/axios-ts-schema">
-      <img src="https://img.shields.io/npm/v/axios-ts-schema.svg" alt="npm package" />
+    <a href="https://www.npmjs.com/package/request-schema">
+      <img src="https://img.shields.io/npm/v/request-schema.svg" alt="npm package" />
     </a>
     <br/>
     <br/>
     <br/>
-    Axios schema for TypeScript Intellisense
+    Request schema for TypeScript Intellisense
     <br/>
+    <br/>
+    <div style="width: 300px; text-align: left">
+      <div>✓ TypeScript</div>
+      <div>✘ agnostic HTTP client (coming soon)</div>
+    </div>
   <br/>
   <br/>
-  <pre>npm i <a href="https://www.npmjs.com/package/react-resources-store">axios-ts-schema</a></pre>
+  <pre>npm i <a href="https://www.npmjs.com/package/request-schema">request-schema</a></pre>
   <br/>
   <br/>
 </div>
@@ -26,14 +31,20 @@
 * :warning: [Axios compatibility version](#warning-axios-compatibility-version)
 * [Under the hood](#under-the-hood)
 
-Axios TS Schema make possible to define your schema in one place and then use `axios.request()` without the need to type output for each request. It also add new types like `urlParams`, `params` and `data`.
+Request Schema make possible to define your schema in one place and then use `request()` without the need to specify type for each request.
 
 `schema` object is a mix of plain JavaScript and TypeScript definition. That is possible with the powerful `as` keyword.
+
+For now, `request-schema` only support axios, but agnostic HTTP client is coming soon.
+
+```bash
+npm i axios@0.18
+```
 
 ## Example
 
 ```js
-import { createAxiosTSInstance } from 'axios-ts-schema'
+import { createAxiosInstance } from 'request-schema'
 
 const schema = {
   'GET users': {
@@ -66,7 +77,7 @@ const schema = {
   },
 }
 
-const api = createAxiosTSInstance({ baseURL: '...' }, schema)
+const api = createAxiosInstance({ baseURL: '...' }, schema)
 
 // GET
 const user = await api.request({
@@ -114,7 +125,7 @@ Properties `params`, `data`, `response` and `url(params)` are used as TypeScript
 ## Things to know
 
 ### Required and omited request properties
-`axios-ts-schema` required 2 new properties on axios request config and omit 2 others.
+`request-schema` required 2 new properties on axios request config and omit 2 others.
 
 It require:
   * `routeName` - use to get route config and definition
@@ -132,30 +143,10 @@ Each keys of the `schema` object can be named like you want. In examples, names 
 
 ## `url`, `urlParams` and `method`
 
-Theses properties are handled by an [axios interceptor](src/addAxiosTsInterceptor.ts) in order to convert schema route to plain axios config.
+Theses properties are handled by an [axios interceptor](src/addAxiosInterceptor.ts) in order to convert schema route to plain axios config.
 
 ## :warning: Axios compatibility version
 
 Not compatible with `axios@0.19.x` due to breaking changes with custom config, see [axios/issues/1718](https://github.com/axios/axios/issues/1718).   
 
 Use axios `axios@0.18.x` instead
-
-## Under the hood
-
-`createAxiosTSInstance()` do 3 things:
-* create Axios instance
-* add interceptor
-* type output
-
-```js
-export function createAxiosTSInstance<T, Instance = AxiosTSInstance<keyof T, T>>(
-  axiosConfig: AxiosRequestConfig, schema: T
-): Instance {
-
-  const api: Instance = axios.create(axiosConfig)
-
-  addAxiosTsInterceptor(api, schema)
-
-  return api;
-}
-```

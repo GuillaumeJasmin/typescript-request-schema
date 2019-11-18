@@ -1,10 +1,10 @@
 {
-  "name": "axios-ts-schema",
+  "name": "request-schema",
   "version": "0.1.0",
-  "description": "",
+  "description": "Request Schema for TypeScript Intellisense",
   "main": "build/index.js",
   "scripts": {
-    "build": "rm -rf build && tsc -p tsconfig.build.json",
+    "build": "npm run test && rm -rf build && tsc -p tsconfig.build.json",
     "test": "npx jest",
     "release-patch": "npm version patch",
     "release-minor": "npm version minor",
@@ -13,11 +13,19 @@
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^24.0.23",
-    "axios": "^0.18.1",
+    "axios": "~0.18.1",
     "jest": "^24.9.0",
     "ts-jest": "^24.1.0",
     "typescript": "^3.7.2"
   },
   "author": "Guillaume Jasmin",
-  "license": "MIT"
+  "license": "MIT",
+  "homepage": "https://github.com/guillaumejasmin/request-schema",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:guillaumejasmin/request-schema.git"
+  },
+  "files": [
+    "build"
+  ]
 }

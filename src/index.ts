@@ -1,3 +1,3 @@
-export { AxiosTSInstance, Schema } from './types'
-export { createAxiosTSInstance } from './createAxiosTSInstance'
+export { RSAxiosInstance, Schema } from './types'
+export { createAxiosInstance } from './createAxiosInstance'
 export { valid } from './valid'

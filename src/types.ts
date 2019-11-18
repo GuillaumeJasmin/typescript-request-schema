@@ -1,9 +1,9 @@
-import { AxiosPromise, AxiosRequestConfig, AxiosInstance, Method } from 'axios'
+import { AxiosPromise, AxiosRequestConfig, AxiosInstance } from 'axios'
 
 export interface Schema {
   [key: string]: {
     url: string | ((params: { [key: string]: string | number }) => string),
-    method: Method,
+    method: string,
     params?: null | {
       [key: string]: any
     },
@@ -51,6 +51,6 @@ type AxiosRequestConfigFinal<Key extends string, SchemaAPI extends any> =
   & Data<Key, SchemaAPI>
   & Params<Key, SchemaAPI>
 
-export interface AxiosTSInstance<SchemaKeys extends string, SchemaAPI extends Schema> extends Omit<AxiosInstance, 'request'> {
+export interface RSAxiosInstance<SchemaKeys extends string, SchemaAPI extends Schema> extends Omit<AxiosInstance, 'request'> {
   request: <Key extends SchemaKeys>(config: AxiosRequestConfigFinal<Key, SchemaAPI>) => AxiosPromise<SchemaAPI[Key]['response']>
 }
