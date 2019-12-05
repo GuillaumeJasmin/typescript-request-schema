@@ -3,6 +3,7 @@
     Request Schema
     <br/>
     <br/>
+    :warning: Deprecated, moved to <a href="https://www.npmjs.com/package/typescript-object-schema">typescript-object-schema</a>
   </h1>
     <br/>
     <a href="https://www.npmjs.com/package/request-schema">
