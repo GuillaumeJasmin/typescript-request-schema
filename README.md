@@ -1,59 +1,53 @@
 <div align="center">
   <h1>
-    Axios TypeScript Schema
+    TypeScript Object Schema
     <br/>
     <br/>
   </h1>
     <br/>
-    <a href="https://www.npmjs.com/package/axios-ts-schema">
-      <img src="https://img.shields.io/npm/v/axios-ts-schema.svg" alt="npm package" />
+    <a href="https://www.npmjs.com/package/ts-object-schema">
+      <img src="https://img.shields.io/npm/v/ts-object-schema.svg" alt="npm package" />
     </a>
     <br/>
     <br/>
     <br/>
-    Axios schema for TypeScript Intellisense
+    Use the powerful of TypeScript Intellisense<br/>
     <br/>
   <br/>
   <br/>
-  <pre>npm i <a href="https://www.npmjs.com/package/react-resources-store">axios-ts-schema</a></pre>
+  <pre>npm i <a href="https://www.npmjs.com/package/ts-object-schema">ts-object-schema</a></pre>
   <br/>
   <br/>
 </div>
 
+* [Motivation](#motivation)
 * [Example](#example)
-* [TypeScript IntelliSense](#typeScript-intellisense)
+* [IntelliSense examples](#intellisense-examples)
 * [Things to know](#things-to-know)
-* :warning: [Axios compatibility version](#warning-axios-compatibility-version)
-* [Under the hood](#under-the-hood)
 
-Axios TS Schema make possible to define your schema in one place and then use `axios.request()` without the need to type output for each request. It also add new types like `urlParams`, `params` and `data`.
+## Motivation
 
-`schema` object is a mix of plain JavaScript and TypeScript definition. That is possible with the powerful `as` keyword.
+TypeScript is a powerful assistant when your are developping, with autocomplete suggestion and complilation errors. I made some utils to define a schema object and then avoid to always import types or interfaces if your shema doesn't change.
 
-## Example
+My use case come from HTTP request pattern. Our REST API schema is always the same and can be define in one place in the application. Let's see our requirement for make HTTP request:
 
-```js
-import { createAxiosTSInstance } from 'axios-ts-schema'
+- the request need an `url` to work correctly.
+- the request have a specific `method`, like GET, POST, PATCH...
+- the url can contain `path params`, like a resource id.
+- the url can contain `query params`, like a pagination
+- the request can contain `data` (or `body`)
+- the request contain a `response`, with always the same data types
 
+Some of these data are dynamics, and others never change. `url` and `method` never change, while `path params`, `query params`, `data` and `response` depends on the context.
+
+Let's define our schema:
+
+```ts
 const schema = {
-  'GET users': {
-    url: 'users',
-    method: 'GET',
-    params: {} as {
-      page?: number,
-      pageSize?: number,
-    },
-    data: null,
-    response: {} as {
-      id: string,
-      username: string,
-      email: string
-    }[]
-  },
   'PATCH users/:id': {
     url: (params: { id: string }) => `users/${params.id}`,
     method: 'PATCH',
-    params: null,
+    queryParams: null,
     data: {} as {
       username?: string,
       email?: string
@@ -65,97 +59,325 @@ const schema = {
     }
   },
 }
+```
 
-const api = createAxiosTSInstance({ baseURL: '...' }, schema)
+*Wait, what is that object ? Is a plain JavaScript object or a TypeScript definition ?*
 
-// GET
-const user = await api.request({
-  routeName: 'GET users',
-  params: {
-    page: 1,
-    pageSize: 10
+It's both !
+
+Technicaly, it's a plain JavaScript object, but it's also used as TypeScript definition for some keys with the powerful of `as` TypeScript keyword.
+
+Now, let's build a `request()` function, base on native `fetch` browser:
+
+```js
+import queryString from 'query-string'
+
+const request = (config) => {
+  const {
+    url,
+    method,
+    data,
+    queryParams,
+    ...restConfig
+  } = config
+
+  const baseURL = 'https://api.com'
+  const queryParamsStr = queryString.stringify(queryParams)
+  const fullURL = `${baseURL}/${url}?${queryParamsStr}`
+
+  return fetch(fullURL, {
+    method,
+    body: JSON.stringify(data),
+    ...restConfig
+  }).then(res => res.json())
+}
+```
+
+It's a very basic function with some data handling, like stringify `query params` and `data`, concat `baseURL` and return a promise with plain JavaScript object.
+
+Currently, TypeScript doesn't know anything about the request schema. It could be usefull if TS can autocomplete config data depends on the request ?
+
+`ts-object-schema` provide 3 utils types to build a powerfull config schema:
+
+```js
+import { ObjectParams, FnParams, Extends } from 'ts-object-schema'
+```
+
+* `ObjectParams` - used to add an object of your schema in your config
+* `FnParams` - used to add a function argument of your schema in your config
+* `Extends` - used to extends an object (internally, it avoid conflict with `ObjectParams` and `FnParams` keys)
+
+Too complicated ? Let's see an example:
+
+```ts
+type Schema = typeof schema
+type SchemaKeys = keyof Schema
+
+type RequestConfig = NonNullable<Parameters<typeof fetch>[1]>
+
+type Config<T extends SchemaKeys> =
+  { name: T }
+  & FnParams<Schema[T], 'url', 'pathParams'>
+  & ObjectParams<Schema[T], 'queryParams'>
+  & ObjectParams<Schema[T], 'data'>
+  & Extends<Schema[T], RequestConfig>
+```
+
+What `Config` look like ? It's equivalent to:
+
+```js
+interface Config<T extends SchemaKeys> {
+  name: T,
+  pathParams: {
+    ...
+  }
+  queryParams: {
+    ...
+  }
+  data: {
+    ...
+  }
+  // and other RequestConfig properties, like headers, cors, etc...
+}
+```
+
+`pathParams`, `queryParams` and `data` will depends on `name`. In our plain JS object schema, `name` is the key of object: `PATCH users/:id`, but you can name it like you want.
+
+*Why use a merge of Typescript Type instead of an interface extends ?*
+
+Because `ObjectParams` will make your key optional depends on your schema definition, and we can't merge dynamic object with `interface extends` .
+
+Now, let's build our `Request` function type:
+
+```ts
+type Request = <T extends SchemaKeys>(config: Config<T>) => Promise<Schema[T]['response']>
+```
+
+We can now use `Request` as a type of our `request()` function.
+
+*But wait, why our `Config` doesn't include `url` and `method` ?*
+
+Because they never change for a specific end point. In our schema, they only are JS plain value. Let's update our `request()`:
+
+```diff
+import queryString from 'query-string'
+
+const request = (config) => {
+  const {
+-   url,
+-   method,
++   name,
++   pathParams,
+    data,
+    queryParams,
+    ...restConfig,
+  } = config
+
++ const { url, method } = schema[name]
+
++ const urlWithPathParams = typeof url === 'function'
++   ? url(pathParams)
++   : url
+
+  const baseURL = 'https://api.com'
+  const queryParamsStr = queryString.stringify(queryParams)
+- const fullURL = `${baseURL}/${url}?${queryParamsStr}`
++ const fullURL = `${baseURL}/${urlWithPathParams}?${queryParamsStr}`
+
+  return fetch(fullURL, {
+    method,
+    body: JSON.stringify(data),
+    ...restConfig,
+  }).then(res => res.json())
+}
+```
+
+We have finished ! You can now use `request()` and TypeScript will automcomplete and show errors if you provide the wrong config.
+
+## Full exemple with real life schema
+
+```ts
+import queryString from 'query-string'
+import { ObjectParams, FnParams, Extends } from 'ts-object-schema'
+
+const schema = {
+  'GET /users': {
+    url: 'users',
+    method: 'GET',
+    queryParams: {} as null | {
+      page?: number,
+      pageSize?: number,
+    },
+    data: null,
+    response: {} as {
+      id: string,
+      username: string,
+      email: string
+    }[]
   },
+  'GET /users/:id': {
+    url: (params: { id: string }) => `users/${params.id}`,
+    method: 'GET',
+    queryParams: null,
+    data: null,
+    response: {} as {
+      id: string,
+      username: string,
+      email: string
+    }
+  },
+  'POST /users/:id': {
+    url: 'users',
+    method: 'POST',
+    queryParams: null,
+    data: {} as {
+      username: string,
+      email: string
+    },
+    response: {} as {
+      id: string,
+      username: string,
+      email: string
+    }
+  },
+  'PATCH /users/:id': {
+    url: (params: { id: string }) => `users/${params.id}`,
+    method: 'PATCH',
+    queryParams: null,
+    data: {} as {
+      username?: string,
+      email?: string
+    },
+    response: {} as {
+      id: string,
+      username: string,
+      email: string
+    }
+  },
+  'DELETE /users/:id': {
+    url: (params: { id: string }) => `users/${params.id}`,
+    method: 'DELETE',
+    queryParams: null,
+    data: null,
+    response: null
+  },
+}
+
+type Schema = typeof schema
+type SchemaKeys = keyof Schema
+
+type RequestConfig = NonNullable<Parameters<typeof fetch>[1]>
+
+type Config<T extends SchemaKeys> =
+  { name: T }
+  & FnParams<Schema[T], 'url', 'pathParams'>
+  & ObjectParams<Schema[T], 'queryParams'>
+  & ObjectParams<Schema[T], 'data'>
+  & Extends<Schema[T], RequestConfig>
+
+type Request = <T extends SchemaKeys>(config: Config<T>) => Promise<Schema[T]['response']>
+
+const request = (config) => {
+  const {
+    name,
+    pathParams,
+    data,
+    queryParams,
+    ...restConfig
+  } = config
+
+  const { url, method } = schema[name]
+
+  const urlWithPathParams = typeof url === 'function'
+    ? url(pathParams)
+    : url
+
+  const baseURL = 'https://api.com'
+  const queryParamsStr = queryString.stringify(queryParams)
+  const fullURL = `${baseURL}/${urlWithPathParams}?${queryParamsStr}`
+
+  return fetch(fullURL, {
+    method,
+    body: JSON.stringify(data),
+    ...restConfig
+  }).then(res => res.json())
+}
+```
+
+Usages:
+
+```ts
+// GET All
+const users = await request({
+  name: 'GET /users',
+  queryParams: {
+    page: 1,
+    pageSize: 10,
+  }
 })
 
-// PATCH
-const user = await api.request({
-  routeName: 'PATCH users/:id',
-  urlParams: {
+users.map(user => {
+  console.log(user.username)
+})
+
+// GET ONE
+const user = await request({
+  name: 'GET /users/:id',
+  pathParams: {
+    id: '1'
+  }
+})
+
+console.log(user.username)
+
+// POST
+const user = await request({
+  name: 'POST /users',
+  pathParams: {
     id: '1'
   },
   data: {
-    username: 'John Doe'
+    username: '...'
   }
+})
+
+// PATCH
+const user = await request({
+  name: 'PATCH /users/:id',
+  data: {
+    email: '...',
+    username: '...'
+  }
+})
+
+// DELETE
+await request({
+  name: 'DELETE /users/:id',
+  pathParams: {
+    id: '1'
+  },
 })
 ```
 
-Properties `url` and `method` are used as JavaScript value
+## IntelliSense examples
 
-
-Properties `params`, `data`, `response` and `url(params)` are used as TypeScript definition.
-
-## TypeScript IntelliSense
-
-* `routeName`  
-![Route Name](./img/routeName.png)
+* `name`  
+![Name](./img/name.png)
 
 * `data`  
 ![Data](./img/data.png)
 
-* `params`  
-![Params](./img/params.png)
-
-* `urlParams`  
-![URL Params](./img/urlParams.png)
+* `queryParams`  
+![queryParams](./img/queryParams.png)
 
 * `response`  
-![Response](./img/responseAwait.png)
+![Response](./img/response.png)
+
+* `othersProperties`  
+![Response](./img/othersProperties.png)
 
 ## Things to know
 
-### Required and omited request properties
-`axios-ts-schema` required 2 new properties on axios request config and omit 2 others.
-
-It require:
-  * `routeName` - use to get route config and definition
-  * `urlParams` - object with params for url
-
-It omit:
-  * `url`
-  * `method`
-
-Theses 2 keys are already define in the schema
-
 ### Schema keys names
 
-Each keys of the `schema` object can be named like you want. In examples, names are `GET users`, `GET users/:id`, but you can named it `GET_users`, `users get`, `retrieve users`, `update users/id`, etc. Keys are use by TypeScript to find the correct route schema, so it's completely arbitrary
-
-## `url`, `urlParams` and `method`
-
-Theses properties are handled by an [axios interceptor](src/addAxiosTsInterceptor.ts) in order to convert schema route to plain axios config.
-
-## :warning: Axios compatibility version
-
-Not compatible with `axios@0.19.x` due to breaking changes with custom config, see [axios/issues/1718](https://github.com/axios/axios/issues/1718).   
-
-Use axios `axios@0.18.x` instead
-
-## Under the hood
-
-`createAxiosTSInstance()` do 3 things:
-* create Axios instance
-* add interceptor
-* type output
-
-```js
-export function createAxiosTSInstance<T, Instance = AxiosTSInstance<keyof T, T>>(
-  axiosConfig: AxiosRequestConfig, schema: T
-): Instance {
-
-  const api: Instance = axios.create(axiosConfig)
-
-  addAxiosTsInterceptor(api, schema)
-
-  return api;
-}
-```
+Each keys of the `schema` object can be named like you want. In examples, names are `GET users`, `GET users/:id`, but you can named it `GET_users`, `users get`, `retrieve users`, `update users/id`, etc. Keys are use by TypeScript to find the correct route schema, so it's completely arbitrary. TypeScript will autocomplete keys for you, so even with a complicated format like `GET users/:id`, you don't have to remember it.
