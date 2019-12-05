@@ -1,367 +1,313 @@
-import axios from 'axios'
-import { createAxiosInstance, valid } from '../index'
+import { FnParams, ObjectParams, Extends } from '../index'
 
 const schema = {
-  'GET users': {
+  'test_1': {
     url: 'users',
     method: 'GET',
-    params: {} as null | {
-      page?: number,
-      pageSize?: number
-    },
+    queryParams: null,
     data: null,
-    response: {} as {
-      id: string,
-      username: string,
-      email: string
-    }[]
+    response: {} as {},
   },
-  'POST users': {
+  'test_2': {
     url: 'users',
-    method: 'POST',
-    params: null,
-    data: {} as {
-      username: string,
-      email: string
+    method: 'GET',
+    queryParams: {} as {
+      page: string
     },
-    response: {} as {
-      id: string,
-      username: string,
-      email: string
-    }
+    response: {} as {},
   },
-  'PATCH users/:id': {
-    url: (params: { id: string }) => `users/${params.id}`,
-    method: 'PATCH',
-    params: null,
-    data: {} as {
-      username?: string,
-      email?: string
+  'test_3': {
+    url: 'users',
+    method: 'GET',
+    queryParams: {} as null | {
+      page?: string
     },
+    response: {} as {},
+  },
+  'test_4': {
+    url: 'users',
+    method: 'GET',
+    queryParams: {} as null | {
+      page: string
+    },
+    response: {} as {},
+  },
+  'test_5': {
+    url: 'users',
+    method: 'GET',
+    response: {} as {},
+  },
+  'test_6': {
+    url: () => 'users',
+    method: 'GET',
+    response: {} as {},
+  },
+  'test_7': {
+    url: (params: { id: string }) => `users/${params.id}`,
+    method: 'GET',
+    response: {} as {},
+  },
+  'test_8': {
+    url: (params: { id: string }) => `users/${params.id}`,
+    method: 'GET',
     response: {} as {
       id: string,
-      username: string,
-      email: string
-    }
+      username: string
+    },
   },
 }
 
-// valid(schema)
+type RequestConfig = NonNullable<Parameters<typeof fetch>[1]>
 
-let request: any;
+type Schema = typeof schema
+type SchemaKeys = keyof Schema
 
-beforeEach(() => {
-  let interceptor: Function;
-  request = jest.fn((config) => {
-    return interceptor(config)
-  })
+type MyConfig<T extends SchemaKeys> =
+  { name: T }
+  & ObjectParams<Schema[T], 'queryParams'>
+  & ObjectParams<Schema[T], 'data'>
+  & FnParams<Schema[T], 'url', 'pathParams'>
+  & Extends<Schema[T], RequestConfig>
 
-  axios.create = jest.fn(() => ({
-    request,
-    interceptors: {
-      request: {
-        use: (inter: typeof interceptor) => {
-          interceptor = inter
-        }
-      }
-    }
-  }) as any)
-})
+type Request = <T extends SchemaKeys>(config: MyConfig<T>) => Promise<Schema[T]['response']>
 
-describe('Axios TS', () => {
-  it('Should return axios instance', () => {
-    const api = createAxiosInstance({ baseURL: 'http://api.com' }, schema)
+const request: Request = (config) => {
+  return {} as any
+}
 
-    expect(api.request).toBeDefined()
-  })
+// uncomment "should failed" comment block to see if TypeScript show an error
 
-  it('Should handle config params', () => {
-    const api = createAxiosInstance({ baseURL: 'http://api.com' }, schema)
-
-    api.request({
-      routeName: 'PATCH users/:id',
-      urlParams: {
-        id: '2'
-      },
-      data: {
-        username: 'new name'
-      }
-    })
-
-    expect(request).toBeCalledWith({
-      routeName: 'PATCH users/:id',
-      urlParams: {
-        id: '2',
-      },
-      data: {
-        username: 'new name'
-      }
-    })
-
-    expect(request).toHaveReturnedWith({
-      url: 'users/2',
-      method: 'PATCH',
-      data: {
-        username: 'new name'
-      }
-    })
-  })
-
+describe('TypeScript def schema', () => {
   it('Should TypeScript def works', () => {
-    const api1 = createAxiosInstance({}, {
-      'GET users': {
-        url: 'users',
-        method: 'GET',
-      },
+    // should works
+    request({
+      name: 'test_1',
     })
 
     // should works
-    api1.request({
-      routeName: 'GET users',
+    request({
+      name: 'test_1',
+      queryParams: null,
     })
 
-    // should works
-    api1.request({
-      routeName: 'GET users',
-      params: null
-    })
-
-    // should failed
-    // api1.request({
-    //   routeName: 'GET users',
-    //   params: {
+    // // should failed: queryParams
+    // request({
+    //  name: 'test_1',
+    //   queryParams: {
     //     page: '1'
     //   }
     // })
 
-    // -------
-
-    const api2 = createAxiosInstance({}, {
-      'GET users': {
-        url: 'users',
-        method: 'GET',
-        params: {} as {
-          page: string
-        }
+    // should works
+    request({
+      name: 'test_2',
+      queryParams: {
+        page: '1'
       },
     })
 
     // should works
-    api2.request({
-      routeName: 'GET users',
-      params: {
+    request({
+      name: 'test_2',
+      queryParams: {
         page: '1'
-      }
+      },
+      headers: {
+        foo: 'bar'
+      },
     })
 
-    // should failed
-    // api2.request({
-    //   routeName: 'GET users',
+    // should failed: method not expected
+    // request({
+    //   name: 'test_2',
+    //   queryParams: {
+    //     page: '1'
+    //   },
+    //   method: 'GET',
+    //   headers: {
+    //     foo: 'bar'
+    //   },
+    // })
+
+    // // should failed: queryParams missing
+    // request({
+    //  name: 'test_2',
     // })
     
-    // should failed
-    // api2.request({
-    //   routeName: 'GET users',
-    //   params: {}
+    // // should failed: queryParams empty
+    // request({
+    //  name: 'test_2',
+    //   queryParams: {}
     // })
 
-    // should failed
-    // api2.request({
-    //   routeName: 'GET users',
-    //   params: null
+    // // should failed: queryParams empty
+    // request({
+    //  name: 'test_2',
+    //   queryParams: null
     // })
 
-    // should failed
-    // api2.request({
-    //   routeName: 'GET users',
-    //   params: {
+    // // should failed: pageSize not expected
+    // request({
+    //  name: 'test_2',
+    //   queryParams: {
     //     page: '1',
     //     pageSize: 2,
     //   }
     // })
 
-    // ---------
-
-    const api3 = createAxiosInstance({}, {
-      'GET users': {
-        url: 'users',
-        method: 'GET',
-        params: {} as null | {
-          page?: string
-        }
-      },
+    // should works
+    request({
+      name: 'test_3',
     })
 
     // should works
-    api3.request({
-      routeName: 'GET users',
-    })
-
-    // should works
-    api3.request({
-      routeName: 'GET users',
-      params: null,
+    request({
+      name: 'test_3',
+      queryParams: null,
     })
     
     // should works
-    api3.request({
-      routeName: 'GET users',
-      params: {}
+    request({
+      name: 'test_3',
+      queryParams: {}
     })
 
     // should works
-    api3.request({
-      routeName: 'GET users',
-      params: {
+    request({
+      name: 'test_3',
+      queryParams: {
         page: '1'
       }
     })
 
-    // should failed
-    // api3.request({
-    //   routeName: 'GET users',
-    //   params: {
+    // should failed: pageSize not expected
+    // request({
+    //  name: 'test_3',
+    //   queryParams: {
     //     page: '1',
     //     pageSize: '2'
     //   }
     // })
 
-    // ------------
-    const api4 = createAxiosInstance({}, {
-      'GET users': {
-        url: 'users',
-        method: 'GET',
-        params: {} as null | {
-          page: string
-        }
-      },
+    // should works
+    request({
+      name: 'test_4',
     })
 
     // should works
-    api4.request({
-      routeName: 'GET users',
+    request({
+      name: 'test_4',
+      queryParams: null
     })
 
     // should works
-    api4.request({
-      routeName: 'GET users',
-      params: null
-    })
-
-    // should works
-    api4.request({
-      routeName: 'GET users',
-      params: {
+    request({
+      name: 'test_4',
+      queryParams: {
         page: '1'
       }
     })
     
-    // should failed
-    // api4.request({
-    //   routeName: 'GET users',
-    //   params: {}
+    // // should failed: queryParams.page required
+    // request({
+    //  name: 'test_4',
+    //   queryParams: {}
     // })
 
-    // should failed
-    // api4.request({
-    //   routeName: 'GET users',
-    //   params: {
+    // // should failed: queryParams.pageSize not expected
+    // request({
+    //  name: 'test_4',
+    //   queryParams: {
     //     page: '1',
     //     pageSize: '2'
     //   }
     // })
 
-  // ----------
-    const api5 = createAxiosInstance({}, {
-      'GET users': {
-        url: 'users',
-        method: 'GET',
-      },
+    // should works
+    request({
+      name: 'test_5',
     })
 
     // should works
-    api5.request({
-      routeName: 'GET users',
+    request({
+      name: 'test_5',
+      queryParams: null
     })
 
-    // should works
-    api5.request({
-      routeName: 'GET users',
-      urlParams: null
-    })
-
-    // should failed
-    // api5.request({
-    //   routeName: 'GET users',
-    //   urlParams: {}
+    // // should failed: queryParams not expected
+    // request({
+    //  name: 'test_5',
+    //   queryParams: {}
     // })
 
-    // --------
-
-    const api6 = createAxiosInstance({}, {
-      'GET users': {
-        url: () => 'users',
-        method: 'GET',
-      },
+    // should works
+    request({
+      name: 'test_6',
     })
 
     // should works
-    api6.request({
-      routeName: 'GET users',
+    request({
+      name: 'test_6',
+      pathParams: null
     })
 
-    // should works
-    api6.request({
-      routeName: 'GET users',
-      urlParams: null
-    })
-
-    // should failed
-    // api6.request({
-    //   routeName: 'GET users',
-    //   urlParams: {}
+    // // should failed: pathParams not expected
+    // request({
+    //  name: 'test_6',
+    //   pathParams: {}
     // })
 
-    // --------
-
-    const api7 = createAxiosInstance({}, {
-      'GET users': {
-        url: (params: { id: string }) => `users/${params.id}`,
-        method: 'GET',
-      },
-    })
-
     // should works
-    api7.request({
-      routeName: 'GET users',
-      urlParams: {
+    request({
+      name: 'test_7',
+      pathParams: {
         id: '2'
       }
     })
 
-    // should failed
-    // api7.request({
-    //   routeName: 'GET users',
-    //   urlParams: {
+    // // should failed: pathParams.id expected to be a string
+    // request({
+    //  name: 'test_7',
+    //   pathParams: {
     //     id: 2
     //   }
     // })
 
-    // should failed
-    // api7.request({
-    //   routeName: 'GET users',
+    // // should failed: pathParams required
+    // request({
+    //  name: 'test_7',
     // })
 
-    // should failed
-    // api7.request({
-    //   routeName: 'GET users',
-    //   urlParams: null
+    // // should failed: pathParams required
+    // request({
+    //  name: 'test_7',
+    //   pathParams: null
     // })
 
-    // should failed
-    // api7.request({
-    //   routeName: 'GET users',
-    //   urlParams: {}
+    // // should failed: pathParams.id required
+    // request({
+    //  name: 'test_7',
+    //   pathParams: {}
+    // })
+
+    // should works
+    request({
+     name: 'test_8',
+     pathParams: {
+        id: '2'
+      }
+    }).then(res => {
+      const data = res.username;
+    })
+
+    // // should failed: email in response not defined
+    // request({
+    //  name: 'test_8',
+    //  pathParams: {
+    //     id: '2'
+    //   }
+    // }).then(res => {
+    //   const data = res.email;
     // })
   })
 })

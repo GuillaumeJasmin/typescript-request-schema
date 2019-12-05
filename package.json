@@ -1,7 +1,7 @@
 {
-  "name": "request-schema",
-  "version": "0.1.1",
-  "description": "Request Schema for TypeScript Intellisense",
+  "name": "ts-object-schema",
+  "version": "1.0.0",
+  "description": "",
   "main": "build/index.js",
   "scripts": {
     "build": "npm run test && rm -rf build && tsc -p tsconfig.build.json",
@@ -13,17 +13,16 @@
   "dependencies": {},
   "devDependencies": {
     "@types/jest": "^24.0.23",
-    "axios": "~0.18.1",
     "jest": "^24.9.0",
     "ts-jest": "^24.1.0",
-    "typescript": "^3.7.2"
+    "typescript": "^3.7.3"
   },
   "author": "Guillaume Jasmin",
   "license": "MIT",
-  "homepage": "https://github.com/guillaumejasmin/request-schema",
+  "homepage": "https://github.com/guillaumejasmin/ts-object-schema",
   "repository": {
     "type": "git",
-    "url": "git@github.com:guillaumejasmin/request-schema.git"
+    "url": "git@github.com:guillaumejasmin/ts-object-schema.git"
   },
   "files": [
     "build"
