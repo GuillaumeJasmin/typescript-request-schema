@@ -1,6 +1,6 @@
 {
   "name": "request-schema",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Request Schema for TypeScript Intellisense",
   "main": "build/index.js",
   "scripts": {
