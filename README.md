@@ -210,7 +210,7 @@ const schema = {
   'GET /users': {
     url: 'users',
     method: 'GET',
-    queryParams: {} as null | {
+    queryParams: {} as void | {
       page?: number,
       pageSize?: number,
     },
@@ -344,14 +344,14 @@ const user = await request({
 *Note*: schema is the same than `fetch` example above, except the `queryParams` was renamed `params` because query parametters on axios config are named `params`. But you can use what you want
 
 ```ts
-import axios, { AxiosRequestConfig, AxiosPromise } from 'axios'
+import axios, { AxiosRequestConfig, AxiosPromise, Method } from 'axios'
 import { ObjectParams, FnParams, Extends } from 'typescript-object-schema'
 
 const schema = {
   'GET /users': {
     url: 'users',
-    method: 'GET',
-    params: {} as null | {
+    method: 'GET' as Method,
+    params: {} as void | {
       page?: number,
       pageSize?: number,
     },
@@ -364,7 +364,7 @@ const schema = {
   },
   'GET /users/:id': {
     url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'GET',
+    method: 'GET' as Method,
     params: null,
     data: null,
     response: {} as {
@@ -375,7 +375,7 @@ const schema = {
   },
   'POST /users/:id': {
     url: 'users',
-    method: 'POST',
+    method: 'POST' as Method,
     params: null,
     data: {} as {
       username: string,
@@ -389,7 +389,7 @@ const schema = {
   },
   'PATCH /users/:id': {
     url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'PATCH',
+    method: 'PATCH' as Method,
     params: null,
     data: {} as {
       username?: string,
@@ -403,7 +403,7 @@ const schema = {
   },
   'DELETE /users/:id': {
     url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'DELETE',
+    method: 'DELETE' as Method,
     params: null,
     data: null,
     response: null
@@ -423,7 +423,30 @@ type Config<T extends SchemaKeys> =
 type Request = <T extends SchemaKeys>(config: Config<T>) => AxiosPromise<Schema[T]['response']>
 
 const axiosInstance = axios.create({ baseURL: 'https://api.com' })
-const request: Request = axiosInstance.request
+
+const request: Request = (config) => {
+  const {
+    name,
+    pathParams,
+    data,
+    params,
+    ...restConfig
+  } = config
+
+  const { url, method } = schema[name]
+
+  const urlWithPathParams = typeof url === 'function'
+    ? url(pathParams)
+    : url
+
+  return axiosInstance.request({
+    url: urlWithPathParams,
+    method,
+    data,
+    params,
+    ...restConfig
+  })
+}
 ```
 
 Usages:
