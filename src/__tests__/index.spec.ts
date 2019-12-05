@@ -72,7 +72,7 @@ type MyConfig<T extends SchemaKeys> =
 type Request = <T extends SchemaKeys>(config: MyConfig<T>) => Promise<Schema[T]['response']>
 
 const request: Request = (config) => {
-  return {} as any
+  return new Promise((resolve) => resolve()) as any
 }
 
 // uncomment "should failed" comment block to see if TypeScript show an error
