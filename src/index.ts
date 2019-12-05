@@ -12,8 +12,4 @@ export type FnParams<Obj extends any, KeyURLConfig extends keyof Obj, KeyValue e
         : { [T in KeyValue]?: null }
     : { [T in KeyValue]?: null }
 
-export type PrimaryKey<KeyValue extends string, KeyName extends string> = {
-  [T in KeyName]: KeyValue
-}
-
 export type Extends<Obj extends any, ExtendsObj> = Omit<ExtendsObj, keyof Obj>
