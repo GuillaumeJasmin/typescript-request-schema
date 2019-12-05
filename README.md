@@ -21,13 +21,18 @@
 </div>
 
 * [Motivation](#motivation)
-* [Example](#example)
+* [Tutorial](#tutorial)
+* [Code examples](#examples)
+  * [fetch](#fetch)
+  * [axios](#examples)
 * [IntelliSense examples](#intellisense-examples)
 * [Things to know](#things-to-know)
 
 ## Motivation
 
 TypeScript is a powerful assistant when your are developping, with autocomplete suggestion and complilation errors. I made some utils to define a schema object and then avoid to always import types or interfaces if your shema doesn't change.
+
+## Tutorial
 
 My use case come from HTTP request pattern. Our REST API schema is always the same and can be define in one place in the application. Let's see our requirement for make HTTP request:
 
@@ -45,7 +50,7 @@ Let's define our schema:
 ```ts
 const schema = {
   'PATCH users/:id': {
-    url: (params: { id: string }) => `users/${params.id}`,
+    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
     method: 'PATCH',
     queryParams: null,
     data: {} as {
@@ -194,7 +199,9 @@ const request = (config) => {
 
 We have finished ! You can now use `request()` and TypeScript will automcomplete and show errors if you provide the wrong config.
 
-## Full exemple with real life schema
+## Examples
+
+### fetch()
 
 ```ts
 import queryString from 'query-string'
@@ -216,7 +223,7 @@ const schema = {
     }[]
   },
   'GET /users/:id': {
-    url: (params: { id: string }) => `users/${params.id}`,
+    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
     method: 'GET',
     queryParams: null,
     data: null,
@@ -241,7 +248,7 @@ const schema = {
     }
   },
   'PATCH /users/:id': {
-    url: (params: { id: string }) => `users/${params.id}`,
+    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
     method: 'PATCH',
     queryParams: null,
     data: {} as {
@@ -255,7 +262,7 @@ const schema = {
     }
   },
   'DELETE /users/:id': {
-    url: (params: { id: string }) => `users/${params.id}`,
+    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
     method: 'DELETE',
     queryParams: null,
     data: null,
@@ -277,7 +284,7 @@ type Config<T extends SchemaKeys> =
 
 type Request = <T extends SchemaKeys>(config: Config<T>) => Promise<Schema[T]['response']>
 
-const request = (config) => {
+const request: Request = (config) => {
   const {
     name,
     pathParams,
@@ -316,10 +323,6 @@ const users = await request({
   }
 })
 
-users.map(user => {
-  console.log(user.username)
-})
-
 // GET ONE
 const user = await request({
   name: 'GET /users/:id',
@@ -328,34 +331,113 @@ const user = await request({
   }
 })
 
-console.log(user.username)
-
 // POST
 const user = await request({
   name: 'POST /users',
-  pathParams: {
-    id: '1'
-  },
   data: {
     username: '...'
   }
 })
+```
 
-// PATCH
-const user = await request({
-  name: 'PATCH /users/:id',
-  data: {
-    email: '...',
-    username: '...'
-  }
-})
+### Axios
 
-// DELETE
-await request({
-  name: 'DELETE /users/:id',
-  pathParams: {
-    id: '1'
+*Note*: schema is the same than `fetch` example above, except the `queryParams` was renamed `params` because query parametters on axios config are named `params`. But you can use what you want
+
+```ts
+import axios, { AxiosRequestConfig, AxiosPromise } from 'axios'
+import { ObjectParams, FnParams, Extends } from 'ts-object-schema'
+
+const schema = {
+  'GET /users': {
+    url: 'users',
+    method: 'GET',
+    params: {} as null | {
+      page?: number,
+      pageSize?: number,
+    },
+    data: null,
+    response: {} as {
+      id: string,
+      username: string,
+      email: string
+    }[]
   },
+  'GET /users/:id': {
+    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
+    method: 'GET',
+    params: null,
+    data: null,
+    response: {} as {
+      id: string,
+      username: string,
+      email: string
+    }
+  },
+  'POST /users/:id': {
+    url: 'users',
+    method: 'POST',
+    params: null,
+    data: {} as {
+      username: string,
+      email: string
+    },
+    response: {} as {
+      id: string,
+      username: string,
+      email: string
+    }
+  },
+  'PATCH /users/:id': {
+    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
+    method: 'PATCH',
+    params: null,
+    data: {} as {
+      username?: string,
+      email?: string
+    },
+    response: {} as {
+      id: string,
+      username: string,
+      email: string
+    }
+  },
+  'DELETE /users/:id': {
+    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
+    method: 'DELETE',
+    params: null,
+    data: null,
+    response: null
+  },
+}
+
+type Schema = typeof schema
+type SchemaKeys = keyof Schema
+
+type Config<T extends SchemaKeys> =
+  { name: T }
+  & FnParams<Schema[T], 'url', 'pathParams'>
+  & ObjectParams<Schema[T], 'params'>
+  & ObjectParams<Schema[T], 'data'>
+  & Extends<Schema[T], AxiosRequestConfig>
+
+type Request = <T extends SchemaKeys>(config: Config<T>) => AxiosPromise<Schema[T]['response']>
+
+const axiosInstance = axios.create({ baseURL: 'https://api.com' })
+const request: Request = axiosInstance.request
+```
+
+Usages:
+```ts
+request({
+  name: 'GET /users',
+  params: {
+    page: 1
+  }
+}).then(res => {
+  res.data.map(user => {
+    console.log(user.username)
+  })
 })
 ```
 
