@@ -5,8 +5,8 @@
     <br/>
   </h1>
   <br/>
-  <a href="https://www.npmjs.com/package/ts-object-schema">
-    <img src="https://img.shields.io/npm/v/ts-object-schema.svg" alt="npm package" />
+  <a href="https://www.npmjs.com/package/typescript-object-schema">
+    <img src="https://img.shields.io/npm/v/typescript-object-schema.svg" alt="npm package" />
   </a>
   <br/>
   <br/>
@@ -14,7 +14,7 @@
   Use the powerful of TypeScript Intellisense<br/>
   <br/>
   <br/>
-  <pre>npm i <a href="https://www.npmjs.com/package/ts-object-schema">ts-object-schema</a></pre>
+  <pre>npm i <a href="https://www.npmjs.com/package/typescript-object-schema">typescript-object-schema</a></pre>
   <br/>
   <br/>
 </div>
@@ -101,10 +101,10 @@ It's a very basic function with some data handling, like stringify `query params
 
 Currently, TypeScript doesn't know anything about the request schema. It could be usefull if TS can autocomplete config data depends on the request ?
 
-`ts-object-schema` provide 3 utils types to build a powerfull config schema:
+`typescript-object-schema` provide 3 utils types to build a powerfull config schema:
 
 ```js
-import { ObjectParams, FnParams, Extends } from 'ts-object-schema'
+import { ObjectParams, FnParams, Extends } from 'typescript-object-schema'
 ```
 
 * `ObjectParams` - used to add an object of your schema in your config
@@ -204,7 +204,7 @@ We have finished ! You can now use `request()` and TypeScript will automcomplete
 
 ```ts
 import queryString from 'query-string'
-import { ObjectParams, FnParams, Extends } from 'ts-object-schema'
+import { ObjectParams, FnParams, Extends } from 'typescript-object-schema'
 
 const schema = {
   'GET /users': {
@@ -345,7 +345,7 @@ const user = await request({
 
 ```ts
 import axios, { AxiosRequestConfig, AxiosPromise } from 'axios'
-import { ObjectParams, FnParams, Extends } from 'ts-object-schema'
+import { ObjectParams, FnParams, Extends } from 'typescript-object-schema'
 
 const schema = {
   'GET /users': {

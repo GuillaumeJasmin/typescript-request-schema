@@ -1,5 +1,5 @@
 {
-  "name": "ts-object-schema",
+  "name": "typescript-object-schema",
   "version": "1.0.0",
   "description": "",
   "main": "build/index.js",
@@ -19,10 +19,10 @@
   },
   "author": "Guillaume Jasmin",
   "license": "MIT",
-  "homepage": "https://github.com/guillaumejasmin/ts-object-schema",
+  "homepage": "https://github.com/guillaumejasmin/typescript-object-schema",
   "repository": {
     "type": "git",
-    "url": "git@github.com:guillaumejasmin/ts-object-schema.git"
+    "url": "git@github.com:guillaumejasmin/typescript-object-schema.git"
   },
   "files": [
     "build"
