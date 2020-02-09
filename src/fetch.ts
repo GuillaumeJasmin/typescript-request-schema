@@ -66,8 +66,8 @@ const apiShema = {
 interface KeysTypes {
   URL: string | ((params?: object) => string);
   PATH_PARAMS?: object;
-  QUERY_PARAMS?: object;
-  DATA?: object;
+  QUERY_PARAMS?: object | null | void;
+  DATA?: object | null | void;
   RESPONSE?: object;
 }
 
@@ -78,9 +78,9 @@ type RequestParams<
 > =
   NonNullable<Parameters<typeof fetch>[1]> 
   & { name: string; }
-  & ObjectParams<KeysTypes, 'PATH_PARAMS', 'pathParams'>
-  & ObjectParams<KeysTypes, 'QUERY_PARAMS', 'queryParams'>
-  & ObjectParams<KeysTypes, 'DATA', 'data'>
+  & ObjectParams<KeysTypes, 'PATH_PARAMS', PathParamsKey>
+  & ObjectParams<KeysTypes, 'QUERY_PARAMS', QueryParamsKey>
+  & ObjectParams<KeysTypes, 'DATA', DataKey>
 
 interface SchemaDef<
   QueryParamsKey extends string,
@@ -90,10 +90,10 @@ interface SchemaDef<
 > {
   [key: string]: (
     { method: string; }
-    & ObjectParams<KeysTypes, 'URL', 'url'>
-    & ObjectParams<KeysTypes, 'QUERY_PARAMS', 'queryParams'>
-    & ObjectParams<KeysTypes, 'DATA', 'data'>
-    & ObjectParams<KeysTypes, 'RESPONSE', 'response'>
+    & { [Key in URLKey]: string | ((params: any) => string)  }
+    & { [Key in QueryParamsKey]: object | null | void }
+    & { [Key in DataKey]: object | null | void }
+    & { [Key in ResponseKey]: object | null | void }
   )
 }
 
@@ -104,8 +104,10 @@ function createFetchRequest<
   URLKey extends string = 'url',
   DataKey extends string = 'data',
   ResponseKey extends string = 'response',
+  D extends SchemaDef<QueryParamsKey, URLKey, DataKey, ResponseKey> = SchemaDef<QueryParamsKey, URLKey, DataKey, ResponseKey>
 >(
     schema: T,
+    onlyForValidation: D,
     requestResolver: (
       config: RequestParams<PathParamsKey, QueryParamsKey, DataKey>,
       schema: SchemaDef<QueryParamsKey, URLKey, DataKey, ResponseKey>
@@ -138,6 +140,7 @@ function createFetchRequest<
 }
 
 const request = createFetchRequest(
+  apiShema,
   apiShema,
   (config, schema) => {
     const {
@@ -173,8 +176,8 @@ const request = createFetchRequest(
 )
 
 request({
-  name: 'GET /users/:id',
-  pathParams: {
-    id: ''
+  name: 'GET /users',
+  queryParams: {
+    page: 1,
   },
-}).then((res) => res.email)
+}).then((res) => res[0].email)
