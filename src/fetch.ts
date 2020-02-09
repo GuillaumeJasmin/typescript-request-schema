@@ -98,16 +98,14 @@ interface SchemaDef<
 }
 
 function createFetchRequest<
-  T extends any = {},
   PathParamsKey extends string = 'pathParams',
   QueryParamsKey extends string = 'queryParams',
   URLKey extends string = 'url',
   DataKey extends string = 'data',
   ResponseKey extends string = 'response',
-  D extends SchemaDef<QueryParamsKey, URLKey, DataKey, ResponseKey> = SchemaDef<QueryParamsKey, URLKey, DataKey, ResponseKey>
+  Schema extends SchemaDef<QueryParamsKey, URLKey, DataKey, ResponseKey> = SchemaDef<QueryParamsKey, URLKey, DataKey, ResponseKey>
 >(
-    schema: T,
-    onlyForValidation: D,
+    schema: Schema,
     requestResolver: (
       config: RequestParams<PathParamsKey, QueryParamsKey, DataKey>,
       schema: SchemaDef<QueryParamsKey, URLKey, DataKey, ResponseKey>
@@ -121,9 +119,7 @@ function createFetchRequest<
     },
   ) {
 
-  type Schema = typeof schema
   type SchemaKeys = keyof Schema
-
   type RequestConfig = NonNullable<Parameters<typeof fetch>[1]>
 
   type Config<T extends SchemaKeys> =
@@ -141,7 +137,7 @@ function createFetchRequest<
 
 const request = createFetchRequest(
   apiShema,
-  apiShema,
+  // apiShema,
   (config, schema) => {
     const {
       name,
@@ -169,9 +165,10 @@ const request = createFetchRequest(
     }).then(res => res.json())
   },
   {
-    // pathParamsKey: 'toto',
-    // queryParamsKey: 'fff'
-    // urlKey: 'd'
+    // pathParamsKey: 'pathParams',
+    // queryParamsKey: 'queryParams',
+    // urlKey: 'url',
+    // dataKey: 'data',
   },
 )
 
@@ -180,4 +177,4 @@ request({
   queryParams: {
     page: 1,
   },
-}).then((res) => res[0].email)
+}).then((res) => res[0].id)
