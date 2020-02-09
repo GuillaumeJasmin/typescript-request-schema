@@ -72,17 +72,17 @@ interface KeysTypes {
 }
 
 type RequestParams<
+  RouteNameKey extends string,
   PathParamsKey extends string,
   QueryParamsKey extends string,
   DataKey extends string,
 > =
-  NonNullable<Parameters<typeof fetch>[1]> 
-  & { name: string; }
+  { [key in RouteNameKey]: string; }
   & ObjectParams<KeysTypes, 'PATH_PARAMS', PathParamsKey>
   & ObjectParams<KeysTypes, 'QUERY_PARAMS', QueryParamsKey>
   & ObjectParams<KeysTypes, 'DATA', DataKey>
 
-interface SchemaDef<
+interface SchemaConfig<
   QueryParamsKey extends string,
   URLKey extends string,
   DataKey extends string,
@@ -98,36 +98,39 @@ interface SchemaDef<
 }
 
 function createFetchRequest<
+  RouteNameKey extends string = 'name',
   PathParamsKey extends string = 'pathParams',
   QueryParamsKey extends string = 'queryParams',
   URLKey extends string = 'url',
   DataKey extends string = 'data',
   ResponseKey extends string = 'response',
-  Schema extends SchemaDef<QueryParamsKey, URLKey, DataKey, ResponseKey> = SchemaDef<QueryParamsKey, URLKey, DataKey, ResponseKey>
+  OtherProperties extends { [key: string]: any } = {},
+  Schema extends SchemaConfig<QueryParamsKey, URLKey, DataKey, ResponseKey> = SchemaConfig<QueryParamsKey, URLKey, DataKey, ResponseKey>
 >(
     schema: Schema,
     requestResolver: (
-      config: RequestParams<PathParamsKey, QueryParamsKey, DataKey>,
-      schema: SchemaDef<QueryParamsKey, URLKey, DataKey, ResponseKey>
-    ) => ReturnType<typeof fetch>,
+      config: RequestParams<RouteNameKey, PathParamsKey, QueryParamsKey, DataKey>,
+      schema: SchemaConfig<QueryParamsKey, URLKey, DataKey, ResponseKey>
+    ) => any,
     options?: {
       pathParamsKey?: PathParamsKey,
       queryParamsKey?: QueryParamsKey,
       urlKey?: URLKey,
       dataKey?: DataKey,
       responseKey?: ResponseKey,
+      routeNameKey?: RouteNameKey,
+      otherProperties?: OtherProperties
     },
   ) {
 
   type SchemaKeys = keyof Schema
-  type RequestConfig = NonNullable<Parameters<typeof fetch>[1]>
 
   type Config<T extends SchemaKeys> =
-    { name: T }
+    { [key in RouteNameKey]: T }
     & FnParams<Schema[T], URLKey, PathParamsKey>
     & ObjectParams<Schema[T], QueryParamsKey>
     & ObjectParams<Schema[T], DataKey>
-    & Extends<Schema[T], RequestConfig>
+    & Extends<Schema[T], OtherProperties>
 
   type Request = <T extends SchemaKeys>(config: Config<T>) => Promise<Schema[T][ResponseKey]>
 
@@ -137,7 +140,6 @@ function createFetchRequest<
 
 const request = createFetchRequest(
   apiShema,
-  // apiShema,
   (config, schema) => {
     const {
       name,
@@ -147,7 +149,7 @@ const request = createFetchRequest(
       ...restConfig
     } = config
 
-    const { url, method } = schema[name]
+    const { url, method, response } = schema[name]
 
     const urlWithPathParams = typeof url === 'function'
       ? url(pathParams)
@@ -158,17 +160,16 @@ const request = createFetchRequest(
     const queryParamsStr = queryString.stringify(queryParams)
     const fullURL = `${baseURL}/${urlWithPathParams}?${queryParamsStr}`
 
-    return fetch(fullURL, {
+    const res = fetch(fullURL, {
       method,
       body: JSON.stringify(data),
       ...restConfig
     }).then(res => res.json())
+
+    return res
   },
   {
-    // pathParamsKey: 'pathParams',
-    // queryParamsKey: 'queryParams',
-    // urlKey: 'url',
-    // dataKey: 'data',
+    otherProperties: {} as Parameters<typeof fetch>[1],
   },
 )
 
