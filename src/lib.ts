@@ -30,7 +30,7 @@ interface ConfInterface {
   ResponseKey: string;
 }
 
-interface DefaultConf {
+export interface DefaultConf {
   RouteNameKey: 'name';
   PathParamsKey: 'pathParams';
   QueryParamsKey: 'queryParams';
