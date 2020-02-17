@@ -28,6 +28,7 @@ interface ConfInterface {
   URLKey: string;
   DataKey: string;
   ResponseKey: string;
+  MethodKey: string;
 }
 
 export interface DefaultConf {
@@ -37,6 +38,7 @@ export interface DefaultConf {
   URLKey: 'url';
   DataKey: 'data';
   ResponseKey: 'response';
+  MethodKey: 'method';
 }
 
 type InputConfigItem<Conf extends ConfInterface> =
@@ -67,6 +69,7 @@ export type GetConfig<
         | UserConf['PathParamsKey']
         | UserConf['QueryParamsKey']
         | UserConf['DataKey']
+        | UserConf['MethodKey']
       >
 
 export type GetOutput<RouteName extends any, TSchema extends any> = TSchema[RouteName]['response']

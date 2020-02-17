@@ -1,4 +1,4 @@
-import { FnParams, ObjectParams, Extends } from '../index'
+import { createFetchRequest } from '../createFetchRequest'
 
 const schema = {
   'test_1': {
@@ -57,23 +57,7 @@ const schema = {
   },
 }
 
-type RequestConfig = NonNullable<Parameters<typeof fetch>[1]>
-
-type Schema = typeof schema
-type SchemaKeys = keyof Schema
-
-type MyConfig<T extends SchemaKeys> =
-  { name: T }
-  & ObjectParams<Schema[T], 'queryParams'>
-  & ObjectParams<Schema[T], 'data'>
-  & FnParams<Schema[T], 'url', 'pathParams'>
-  & Extends<Schema[T], RequestConfig>
-
-type Request = <T extends SchemaKeys>(config: MyConfig<T>) => Promise<Schema[T]['response']>
-
-const request: Request = (config) => {
-  return new Promise((resolve) => resolve()) as any
-}
+const request = createFetchRequest(schema)
 
 // uncomment "should failed" comment block to see if TypeScript show an error
 
@@ -267,7 +251,7 @@ describe('TypeScript def schema', () => {
 
     // // should failed: pathParams.id expected to be a string
     // request({
-    //  name: 'test_7',
+    //   name: 'test_7',
     //   pathParams: {
     //     id: 2
     //   }
@@ -275,18 +259,18 @@ describe('TypeScript def schema', () => {
 
     // // should failed: pathParams required
     // request({
-    //  name: 'test_7',
+    //   name: 'test_7',
     // })
 
     // // should failed: pathParams required
     // request({
-    //  name: 'test_7',
+    //   name: 'test_7',
     //   pathParams: null
     // })
 
     // // should failed: pathParams.id required
     // request({
-    //  name: 'test_7',
+    //   name: 'test_7',
     //   pathParams: {}
     // })
 
