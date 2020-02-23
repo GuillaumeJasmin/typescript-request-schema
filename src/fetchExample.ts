@@ -1,10 +1,10 @@
-import { Method, validSchema } from './lib'
+import { methods, validSchema } from './lib'
 import { createFetchRequest } from './createFetchRequest'
 
 const apiSchema = {
   'GET /users': {
     url: 'users',
-    method: 'GET' as Method,
+    method: 'GET',
     queryParams: {} as void | {
       page?: number,
       pageSize?: number,
@@ -18,7 +18,7 @@ const apiSchema = {
   },
   'GET /users/:id': {
     url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'GET' as Method,
+    method: 'GET',
     queryParams: null,
     data: null,
     response: {} as {
@@ -29,7 +29,7 @@ const apiSchema = {
   },
   'POST /users/:id': {
     url: 'users',
-    method: 'POST' as Method,
+    method: 'POST',
     queryParams: null,
     data: {} as {
       username: string,
@@ -43,7 +43,7 @@ const apiSchema = {
   },
   'PATCH /users/:id': {
     url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'PATCH' as Method,
+    method: 'PATCH',
     queryParams: null,
     data: {} as {
       username?: string,
@@ -57,7 +57,7 @@ const apiSchema = {
   },
   'DELETE /users/:id': {
     url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'DELETE' as Method,
+    method: 'DELETE',
     queryParams: null,
     data: null,
     response: null
@@ -74,7 +74,7 @@ request({
     id: ''
   },
   data: {},
-}).then(res => res.id)
+}).then((res) => res.id)
 
 request({
   name: 'GET /users',

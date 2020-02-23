@@ -1,11 +1,11 @@
-import { Method, validSchema } from './lib'
+import { validSchema } from './lib'
 import axios from 'axios'
 import { createAxiosRequest } from './createAxiosRequest'
 
 const apiSchema = {
   'GET /users': {
     url: 'users',
-    method: 'GET' as Method,
+    method: 'GET',
     queryParams: {} as void | {
       page?: number,
       pageSize?: number,
@@ -19,7 +19,7 @@ const apiSchema = {
   },
   'GET /users/:id': {
     url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'GET' as Method,
+    method: 'GET',
     queryParams: null,
     data: null,
     response: {} as {
@@ -30,7 +30,7 @@ const apiSchema = {
   },
   'POST /users/:id': {
     url: 'users',
-    method: 'POST' as Method,
+    method: 'POST',
     queryParams: null,
     data: {} as {
       username: string,
@@ -44,7 +44,7 @@ const apiSchema = {
   },
   'PATCH /users/:id': {
     url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'PATCH' as Method,
+    method: 'PATCH',
     queryParams: null,
     data: {} as {
       username?: string,
@@ -58,7 +58,7 @@ const apiSchema = {
   },
   'DELETE /users/:id': {
     url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'DELETE' as Method,
+    method: 'DELETE',
     queryParams: null,
     data: null,
     response: null
@@ -77,7 +77,7 @@ request({
     id: ''
   },
   data: {},
-}).then(res => res.data.id)
+}).then((res) => res.data.id)
 
 request({
   name: 'GET /users',

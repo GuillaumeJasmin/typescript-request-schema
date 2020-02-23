@@ -12,14 +12,17 @@ export type FnParams<Obj extends any, KeyURLConfig extends keyof Obj, KeyValue e
         : { [T in KeyValue]?: null }
     : { [T in KeyValue]?: null }
 
-export type Method =
-  | "DELETE"
-  | "GET"
-  | "HEAD"
-  | "OPTIONS"
-  | "PATCH"
-  | "POST"
-  | "PUT"
+export const methods = {
+  DELETE: 'DELETE',
+  GET: 'GET',
+  HEAD: 'HEAD',
+  OPTIONS: 'OPTIONS',
+  PATCH: 'PATCH',
+  POST: 'POST',
+  PUT: 'PUT',
+}
+
+type Method = string
 
 interface ConfInterface {
   RouteNameKey: string;
