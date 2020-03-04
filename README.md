@@ -76,7 +76,7 @@ Now, let's build a `request()` function, base on native `fetch` browser:
 ```js
 import queryString from 'query-string'
 
-const request = (config) => {
+function request(config) {
   const {
     url,
     method,
@@ -87,7 +87,10 @@ const request = (config) => {
 
   const baseURL = 'https://api.com'
   const queryParamsStr = queryString.stringify(queryParams)
-  const fullURL = `${baseURL}/${url}?${queryParamsStr}`
+  let fullURL = `${baseURL}/${url}`
+  if (Object.keys(queryParamsStr).length) {
+    fullURL += `?${queryParamsStr}`
+  }
 
   return fetch(fullURL, {
     method,
@@ -101,206 +104,47 @@ It's a very basic function with some data handling, like stringify `query params
 
 Currently, TypeScript doesn't know anything about the request schema. It could be usefull if TS can autocomplete config data depends on the request ?
 
-`typescript-object-schema` provide 3 utils types to build a powerfull config schema:
+`typescript-object-schema` provide 2 utils types to build a powerfull config schema:
 
 ```js
-import { ObjectParams, FnParams, Extends } from 'typescript-object-schema'
+import { GetConfig, GetOutput } from 'typescript-object-schema'
 ```
-
-* `ObjectParams` - used to add an object of your schema in your config
-* `FnParams` - used to add a function argument of your schema in your config
-* `Extends` - used to extends an object (internally, it avoid conflict with `ObjectParams` and `FnParams` keys)
-
-Too complicated ? Let's see an example:
 
 ```ts
-type Schema = typeof schema
-type SchemaKeys = keyof Schema
+type Schema = typeof shema
+type RouteName = keyof Schema
+type FetchParams = NonNullable<Parameters<typeof fetch>[1]>
 
-type RequestConfig = NonNullable<Parameters<typeof fetch>[1]>
-
-type Config<T extends SchemaKeys> =
-  { name: T }
-  & FnParams<Schema[T], 'url', 'pathParams'>
-  & ObjectParams<Schema[T], 'queryParams'>
-  & ObjectParams<Schema[T], 'data'>
-  & Extends<Schema[T], RequestConfig>
-```
-
-What `Config` look like ? It's equivalent to:
-
-```js
-interface Config<T extends SchemaKeys> {
-  name: T,
-  pathParams: {
-    ...
-  }
-  queryParams: {
-    ...
-  }
-  data: {
-    ...
-  }
-  // and other RequestConfig properties, like headers, cors, etc...
-}
-```
-
-`pathParams`, `queryParams` and `data` will depends on `name`. In our plain JS object schema, `name` is the key of object: `PATCH users/:id`, but you can name it like you want.
-
-*Why use a merge of Typescript Type instead of an interface extends ?*
-
-Because `ObjectParams` will make your key optional depends on your schema definition, and we can't merge dynamic object with `interface extends` .
-
-Now, let's build our `Request` function type:
-
-```ts
-type Request = <T extends SchemaKeys>(config: Config<T>) => Promise<Schema[T]['response']>
-```
-
-We can now use `Request` as a type of our `request()` function.
-
-*But wait, why our `Config` doesn't include `url` and `method` ?*
-
-Because they never change for a specific end point. In our schema, they only are JS plain value. Let's update our `request()`:
-
-```diff
-import queryString from 'query-string'
-
-const request = (config) => {
-  const {
--   url,
--   method,
-+   name,
-+   pathParams,
-    data,
-    queryParams,
-    ...restConfig,
-  } = config
-
-+ const { url, method } = schema[name]
-
-+ const urlWithPathParams = typeof url === 'function'
-+   ? url(pathParams)
-+   : url
-
-  const baseURL = 'https://api.com'
-  const queryParamsStr = queryString.stringify(queryParams)
-- const fullURL = `${baseURL}/${url}?${queryParamsStr}`
-+ const fullURL = `${baseURL}/${urlWithPathParams}?${queryParamsStr}`
-
-  return fetch(fullURL, {
-    method,
-    body: JSON.stringify(data),
-    ...restConfig,
-  }).then(res => res.json())
-}
-```
-
-We have finished ! You can now use `request()` and TypeScript will automcomplete and show errors if you provide the wrong config.
-
-## Examples
-
-### fetch()
-
-```ts
-import queryString from 'query-string'
-import { ObjectParams, FnParams, Extends } from 'typescript-object-schema'
-
-const schema = {
-  'GET /users': {
-    url: 'users',
-    method: 'GET',
-    queryParams: {} as void | {
-      page?: number,
-      pageSize?: number,
-    },
-    data: null,
-    response: {} as {
-      id: string,
-      username: string,
-      email: string
-    }[]
-  },
-  'GET /users/:id': {
-    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'GET',
-    queryParams: null,
-    data: null,
-    response: {} as {
-      id: string,
-      username: string,
-      email: string
-    }
-  },
-  'POST /users/:id': {
-    url: 'users',
-    method: 'POST',
-    queryParams: null,
-    data: {} as {
-      username: string,
-      email: string
-    },
-    response: {} as {
-      id: string,
-      username: string,
-      email: string
-    }
-  },
-  'PATCH /users/:id': {
-    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'PATCH',
-    queryParams: null,
-    data: {} as {
-      username?: string,
-      email?: string
-    },
-    response: {} as {
-      id: string,
-      username: string,
-      email: string
-    }
-  },
-  'DELETE /users/:id': {
-    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'DELETE',
-    queryParams: null,
-    data: null,
-    response: null
-  },
-}
-
-type Schema = typeof schema
-type SchemaKeys = keyof Schema
-
-type RequestConfig = NonNullable<Parameters<typeof fetch>[1]>
-
-type Config<T extends SchemaKeys> =
-  { name: T }
-  & FnParams<Schema[T], 'url', 'pathParams'>
-  & ObjectParams<Schema[T], 'queryParams'>
-  & ObjectParams<Schema[T], 'data'>
-  & Extends<Schema[T], RequestConfig>
-
-type Request = <T extends SchemaKeys>(config: Config<T>) => Promise<Schema[T]['response']>
-
-const request: Request = (config) => {
+function request<T extends RouteName>(config: GetConfig<Schema, T, FetchParams>): Promise<GetOutput<T, Schema>> {
   const {
     name,
     pathParams,
     data,
-    queryParams,
+    queryParams = {},
     ...restConfig
   } = config
 
-  const { url, method } = schema[name]
+  const {
+    url,
+    method,
+    queryParams: defaultQueryParams
+  } = apiSchema[name]
 
-  const urlWithPathParams = typeof url === 'function'
+  const finalQueryParams = {
+    ...defaultQueryParams,
+    ...queryParams,
+  }
+
+  const urlWithPathParams = typeof url === 'function' && pathParams
     ? url(pathParams)
     : url
 
   const baseURL = 'https://api.com'
-  const queryParamsStr = queryString.stringify(queryParams)
-  const fullURL = `${baseURL}/${urlWithPathParams}?${queryParamsStr}`
+  const queryParamsStr = queryString.stringify(finalQueryParams)
+  let fullURL = `${baseURL}/${urlWithPathParams}`
+  if (Object.keys(queryParamsStr).length) {
+    fullURL += `?${queryParamsStr}`
+  }
 
   return fetch(fullURL, {
     method,
@@ -310,156 +154,16 @@ const request: Request = (config) => {
 }
 ```
 
+Now TypeScript can infer and automcomplete the config and response.
+
 Usages:
 
 ```ts
-// GET All
-const users = await request({
-  name: 'GET /users',
-  queryParams: {
-    page: 1,
-    pageSize: 10,
-  }
-})
-
-// GET ONE
-const user = await request({
-  name: 'GET /users/:id',
-  pathParams: {
-    id: '1'
-  }
-})
-
-// POST
-const user = await request({
-  name: 'POST /users',
+const updatedUser = await request({
+  name: 'PATCH users/:id',
   data: {
-    username: '...'
+    email: '...',
   }
-})
-```
-
-### Axios
-
-*Note*: schema is the same than `fetch` example above, except the `queryParams` was renamed `params` because query parametters on axios config are named `params`. But you can use what you want
-
-```ts
-import axios, { AxiosRequestConfig, AxiosPromise, Method } from 'axios'
-import { ObjectParams, FnParams, Extends } from 'typescript-object-schema'
-
-const schema = {
-  'GET /users': {
-    url: 'users',
-    method: 'GET' as Method,
-    params: {} as void | {
-      page?: number,
-      pageSize?: number,
-    },
-    data: null,
-    response: {} as {
-      id: string,
-      username: string,
-      email: string
-    }[]
-  },
-  'GET /users/:id': {
-    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'GET' as Method,
-    params: null,
-    data: null,
-    response: {} as {
-      id: string,
-      username: string,
-      email: string
-    }
-  },
-  'POST /users/:id': {
-    url: 'users',
-    method: 'POST' as Method,
-    params: null,
-    data: {} as {
-      username: string,
-      email: string
-    },
-    response: {} as {
-      id: string,
-      username: string,
-      email: string
-    }
-  },
-  'PATCH /users/:id': {
-    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'PATCH' as Method,
-    params: null,
-    data: {} as {
-      username?: string,
-      email?: string
-    },
-    response: {} as {
-      id: string,
-      username: string,
-      email: string
-    }
-  },
-  'DELETE /users/:id': {
-    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'DELETE' as Method,
-    params: null,
-    data: null,
-    response: null
-  },
-}
-
-type Schema = typeof schema
-type SchemaKeys = keyof Schema
-
-type Config<T extends SchemaKeys> =
-  { name: T }
-  & FnParams<Schema[T], 'url', 'pathParams'>
-  & ObjectParams<Schema[T], 'params'>
-  & ObjectParams<Schema[T], 'data'>
-  & Extends<Schema[T], AxiosRequestConfig>
-
-type Request = <T extends SchemaKeys>(config: Config<T>) => AxiosPromise<Schema[T]['response']>
-
-const axiosInstance = axios.create({ baseURL: 'https://api.com' })
-
-const request: Request = (config) => {
-  const {
-    name,
-    pathParams,
-    data,
-    params,
-    ...restConfig
-  } = config
-
-  const { url, method } = schema[name]
-
-  const urlWithPathParams = typeof url === 'function'
-    ? url(pathParams)
-    : url
-
-  return axiosInstance.request({
-    url: urlWithPathParams,
-    method,
-    data,
-    params,
-    ...restConfig
-  })
-}
-```
-
-Usages:
-```ts
-request({
-  name: 'GET /users',
-  params: {
-    page: 1
-  }
-}).then(res => {
-  res.data.map(user => {
-    console.log(user.username)
-  })
 })
 ```
 

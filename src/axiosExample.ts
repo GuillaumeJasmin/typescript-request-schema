@@ -1,6 +1,5 @@
-import { validSchema } from './lib'
-import axios from 'axios'
-import { createAxiosRequest } from './createAxiosRequest'
+import { validSchema, GetConfig, GetOutput } from './lib'
+import axios, { AxiosPromise, AxiosRequestConfig } from 'axios'
 
 const apiSchema = {
   'GET /users': {
@@ -69,7 +68,41 @@ validSchema(apiSchema)
 
 const axiosInstance = axios.create({ baseURL: 'https://api.com' })
 
-const request = createAxiosRequest(apiSchema, axiosInstance)
+type Schema = typeof apiSchema
+type RouteName = keyof typeof apiSchema
+
+function request<T extends RouteName>(config: GetConfig<Schema, T, AxiosRequestConfig>): AxiosPromise<GetOutput<T, Schema>> {
+  const {
+    name,
+    pathParams,
+    data,
+    queryParams = {},
+    ...restConfig
+  } = config
+
+  const {
+    url,
+    method,
+    queryParams: defaultQueryParams
+  } = apiSchema[name]
+
+  const urlWithPathParams = (typeof url === 'function' && pathParams)
+    ? url(pathParams)
+    : url
+
+  const finalQueryParams = {
+    ...queryParams,
+    ...defaultQueryParams,
+  }
+
+  return axiosInstance.request({
+    url: urlWithPathParams,
+    method,
+    data,
+    params: finalQueryParams,
+    ...restConfig
+  })
+}
 
 request({
   name: 'PATCH /users/:id',

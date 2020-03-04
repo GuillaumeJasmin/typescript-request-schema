@@ -1,5 +1,4 @@
-import { methods, validSchema } from './lib'
-import { createFetchRequest } from './createFetchRequest'
+import { validSchema, GetConfig, GetOutput } from './lib'
 
 const apiSchema = {
   'GET /users': {
@@ -66,7 +65,48 @@ const apiSchema = {
 
 validSchema(apiSchema)
 
-const request = createFetchRequest(apiSchema)
+type Schema = typeof apiSchema
+type RouteName = keyof typeof apiSchema
+type FetchParams = NonNullable<Parameters<typeof fetch>[1]>
+
+function request<T extends RouteName>(config: GetConfig<Schema, T, FetchParams>): Promise<GetOutput<T, Schema>> {
+  const {
+    name,
+    pathParams,
+    data,
+    queryParams = {},
+    ...restConfig
+  } = config
+
+  const {
+    url,
+    method,
+    queryParams: defaultQueryParams
+  } = apiSchema[name]
+
+  const finalQueryParams = {
+    ...defaultQueryParams,
+    ...queryParams,
+  }
+
+  const urlWithPathParams = typeof url === 'function' && pathParams
+    ? url(pathParams)
+    : url
+
+  const baseURL = 'https://api.com'
+  // @ts-ignore
+  const queryParamsStr = queryString.stringify(finalQueryParams)
+  let fullURL = `${baseURL}/${urlWithPathParams}`
+  if (Object.keys(queryParamsStr).length) {
+    fullURL += `?${queryParamsStr}`
+  }
+
+  return fetch(fullURL, {
+    method,
+    body: JSON.stringify(data),
+    ...restConfig
+  }).then(res => res.json())
+}
 
 request({
   name: 'PATCH /users/:id',

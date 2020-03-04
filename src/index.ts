@@ -1,1 +1,1 @@
-export { GetConfig, GetOutput, Method, validSchema } from './lib'
+export { GetConfig, GetOutput, validSchema } from './lib'

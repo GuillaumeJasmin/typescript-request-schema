@@ -1,4 +1,4 @@
-import { createFetchRequest } from '../createFetchRequest'
+import { GetConfig, GetOutput } from '../lib'
 
 const schema = {
   'test_1': {
@@ -57,7 +57,51 @@ const schema = {
   },
 }
 
-const request = createFetchRequest(schema)
+type Schema = typeof schema
+type RouteName = keyof Schema
+type FetchParams = NonNullable<Parameters<typeof fetch>[1]>
+
+// @ts-ignore
+function request<T extends RouteName>(config: GetConfig<Schema, T, FetchParams>): Promise<GetOutput<T, Schema>> {
+  const {
+    name,
+    pathParams,
+    data,
+    queryParams = {},
+    ...restConfig
+  } = config
+
+  const {
+    url,
+    method,
+    // @ts-ignore
+    queryParams: defaultQueryParams
+  } = schema[name]
+
+  const finalQueryParams = {
+    ...defaultQueryParams,
+    // @ts-ignore
+    ...queryParams,
+  }
+
+  const urlWithPathParams = typeof url === 'function' && pathParams
+    ? url(pathParams)
+    : url
+
+  const baseURL = 'https://api.com'
+  // @ts-ignore
+  const queryParamsStr = queryString.stringify(finalQueryParams)
+  let fullURL = `${baseURL}/${urlWithPathParams}`
+  if (fullURL) {
+    fullURL += `?${queryParamsStr}`
+  }
+
+  return fetch(fullURL, {
+    method,
+    body: JSON.stringify(data),
+    ...restConfig
+  }).then(res => res.json())
+}
 
 // uncomment "should failed" comment block to see if TypeScript show an error
 
