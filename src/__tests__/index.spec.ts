@@ -1,4 +1,4 @@
-import { GetConfig, GetOutput } from '../lib'
+import { Input, Output, validSchema } from '../lib'
 
 const schema = {
   'test_1': {
@@ -14,6 +14,7 @@ const schema = {
     queryParams: {} as {
       page: string
     },
+    data: null,
     response: {} as {},
   },
   'test_3': {
@@ -22,34 +23,44 @@ const schema = {
     queryParams: {} as null | {
       page?: string
     },
+    data: null,
     response: {} as {},
   },
   'test_4': {
     url: 'users',
     method: 'GET',
     queryParams: {} as null | {
-      page: string
+      page: string;
     },
+    data: null,
     response: {} as {},
   },
   'test_5': {
     url: 'users',
     method: 'GET',
+    queryParams: null,
+    data: null,
     response: {} as {},
   },
   'test_6': {
     url: () => 'users',
     method: 'GET',
+    queryParams: null,
+    data: null,
     response: {} as {},
   },
   'test_7': {
     url: (params: { id: string }) => `users/${params.id}`,
     method: 'GET',
+    queryParams: null,
+    data: null,
     response: {} as {},
   },
   'test_8': {
     url: (params: { id: string }) => `users/${params.id}`,
     method: 'GET',
+    queryParams: null,
+    data: null,
     response: {} as {
       id: string,
       username: string
@@ -57,17 +68,63 @@ const schema = {
   },
 }
 
-type Schema = typeof schema
-type RouteName = keyof Schema
-type FetchParams = NonNullable<Parameters<typeof fetch>[1]>
+validSchema(schema)
 
-// @ts-ignore
-function request<T extends RouteName>(config: GetConfig<Schema, T, FetchParams>): Promise<GetOutput<T, Schema>> {
-  // @ts-ignore
+validSchema({
+  // should failed: url required
+  // @ts-expect-error
+  'test_1': {
+    method: 'GET',
+    response: {} as {
+      id: string,
+      username: string
+    },
+  },
+  // should failed: method required
+  // @ts-expect-error
+  'test_2': {
+    url: (params: { id: string }) => `users/${params.id}`,
+    response: {} as {
+      id: string,
+      username: string
+    },
+  },
+  // should failed: response required
+  // @ts-expect-error
+  'test_3': {
+    url: (params: { id: string }) => `users/${params.id}`,
+    method: 'GET',
+  },
+})
+
+type Schema = typeof schema
+type RequestName = keyof Schema
+type ExtraConfig = NonNullable<Parameters<typeof fetch>[1]>
+type RequestConfig<T extends RequestName> = Input<T, Schema, ExtraConfig>
+type RequestOutput<T extends RequestName> = Promise<Output<T, Schema>>
+
+function request<T extends RequestName>(config: RequestConfig<T>): RequestOutput<T> {
+  const { name, data, queryParams, pathParams, ...restConfig } = config
+  const { url, method } = schema[name]
+
+  const urlWithPathParams = (typeof url === 'function' && pathParams)
+    ? url(pathParams)
+    : url as string
+
+  const queryParamsAsString = Object.entries(queryParams ?? {})
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&')
+
+  const fullUrl = `${urlWithPathParams}?${queryParamsAsString}`
+
+  // return fetch(urlWithPathParams, {
+  //   method,
+  //   body: data ? JSON.stringify(data) : undefined,
+  //   ...restConfig
+  // }).then(res => res.json())
+
   return Promise.resolve({})
 }
-
-// uncomment "should failed" comment block to see if TypeScript show an error
 
 describe('TypeScript def schema', () => {
   it('Should TypeScript def works', () => {
@@ -126,26 +183,26 @@ describe('TypeScript def schema', () => {
     // should failed: queryParams missing
     // @ts-expect-error
     request({
-     name: 'test_2',
+      name: 'test_2',
     })
     
     // should failed: queryParams empty
     request({
-     name: 'test_2',
+      name: 'test_2',
       // @ts-expect-error
       queryParams: {}
     })
 
     // should failed: queryParams empty
     request({
-     name: 'test_2',
+      name: 'test_2',
       // @ts-expect-error
       queryParams: null
     })
 
     // should failed: pageSize not expected
     request({
-     name: 'test_2',
+      name: 'test_2',
       queryParams: {
         page: '1',
         // @ts-expect-error
@@ -180,7 +237,7 @@ describe('TypeScript def schema', () => {
 
     // should failed: pageSize not expected
     request({
-     name: 'test_3',
+      name: 'test_3',
       queryParams: {
         page: '1',
         // @ts-expect-error
@@ -209,14 +266,14 @@ describe('TypeScript def schema', () => {
     
     // should failed: queryParams.page required
     request({
-     name: 'test_4',
+      name: 'test_4',
       // @ts-expect-error
       queryParams: {}
     })
 
     // should failed: queryParams.pageSize not expected
     request({
-     name: 'test_4',
+      name: 'test_4',
       queryParams: {
         page: '1',
         // @ts-expect-error
@@ -299,8 +356,8 @@ describe('TypeScript def schema', () => {
 
     // should works
     request({
-     name: 'test_8',
-     pathParams: {
+      name: 'test_8',
+      pathParams: {
         id: '2'
       }
     }).then(res => {
@@ -309,8 +366,8 @@ describe('TypeScript def schema', () => {
 
     // should failed: email in response not defined
     request({
-     name: 'test_8',
-     pathParams: {
+      name: 'test_8',
+      pathParams: {
         id: '2'
       }
     }).then(res => {

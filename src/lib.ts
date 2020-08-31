@@ -1,15 +1,15 @@
-export type ObjectParams<Obj extends any, Key extends string, KeyValue extends string = Key> =
+export type ObjectParams<Obj extends {[key: string]: any}, Key extends string, KeyValue extends string = Key> =
   Obj[Key] extends (object | string | number | boolean)
     ? { [T in KeyValue]: Obj[Key] }
     : Obj[Key] extends (void | null | object)
       ? { [T in KeyValue]?: Obj[Key] }
       : { [T in KeyValue]?: null }
 
-export type FnParams<Obj extends any, KeyURLConfig extends keyof Obj, KeyValue extends string> =
+export type FnParams<Obj extends {[key: string]: any}, KeyURLConfig extends keyof Obj, KeyValue extends string> =
   Obj[KeyURLConfig] extends Function
     ? Parameters<Obj[KeyURLConfig]>[0] extends object
-        ? { [T in KeyValue]: Parameters<Obj[KeyURLConfig]>[0] }
-        : { [T in KeyValue]?: null }
+      ? { [T in KeyValue]: Parameters<Obj[KeyURLConfig]>[0] }
+      : { [T in KeyValue]?: null }
     : { [T in KeyValue]?: null }
 
 type Method = string
@@ -45,9 +45,9 @@ interface InputConfig<Conf extends ConfInterface> {
   [key: string]: InputConfigItem<Conf>
 }
 
-export type GetConfig<
-  Schema extends InputConfig<UserConf>,
+export type Input<
   SchemaKeys extends keyof Schema,
+  Schema extends InputConfig<UserConf>,
   OtherProperties,
   UserConf extends ConfInterface = DefaultConf,
 > =
@@ -65,6 +65,6 @@ export type GetConfig<
         | UserConf['MethodKey']
       >
 
-export type GetOutput<RouteName extends any, TSchema extends any> = TSchema[RouteName]['response']
+export type Output<RouteName extends string, TSchema extends {[key: string]: any}> = TSchema[RouteName]['response']
 
 export function validSchema(item: InputConfig<DefaultConf>) {}

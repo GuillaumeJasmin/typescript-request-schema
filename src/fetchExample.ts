@@ -1,6 +1,6 @@
-import { validSchema, GetConfig, GetOutput } from './lib'
+import { validSchema, Input, Output } from './lib'
 
-const apiSchema = {
+const schema = {
   'GET /users': {
     url: 'users',
     method: 'GET',
@@ -63,47 +63,31 @@ const apiSchema = {
   },
 }
 
-validSchema(apiSchema)
+validSchema(schema)
 
-type Schema = typeof apiSchema
-type RouteName = keyof typeof apiSchema
-type FetchParams = NonNullable<Parameters<typeof fetch>[1]>
+type Schema = typeof schema
+type RequestName = keyof Schema
+type ExtraConfig = NonNullable<Parameters<typeof fetch>[1]>
+type RequestConfig<T extends RequestName> = Input<T, Schema, ExtraConfig>
+type RequestOutput<T extends RequestName> = Promise<Output<T, Schema>>
 
-function request<T extends RouteName>(config: GetConfig<Schema, T, FetchParams>): Promise<GetOutput<T, Schema>> {
-  const {
-    name,
-    pathParams,
-    data,
-    queryParams = {},
-    ...restConfig
-  } = config
+function request<T extends RequestName>(config: RequestConfig<T>): RequestOutput<T> {
+  const { name, data, queryParams, pathParams, ...restConfig } = config
+  const { url, method } = schema[name]
 
-  const {
-    url,
-    method,
-    queryParams: defaultQueryParams
-  } = apiSchema[name]
-
-  const finalQueryParams = {
-    ...defaultQueryParams,
-    ...queryParams,
-  }
-
-  const urlWithPathParams = typeof url === 'function' && pathParams
+  const urlWithPathParams = (typeof url === 'function' && pathParams)
     ? url(pathParams)
-    : url
+    : url as string
 
-  const baseURL = 'https://api.com'
-  // @ts-ignore
-  const queryParamsStr = queryString.stringify(finalQueryParams)
-  let fullURL = `${baseURL}/${urlWithPathParams}`
-  if (Object.keys(queryParamsStr).length) {
-    fullURL += `?${queryParamsStr}`
-  }
+  const queryParamsAsString = Object.entries(queryParams ?? {})
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&')
 
-  return fetch(fullURL, {
+  const fullUrl = `${urlWithPathParams}?${queryParamsAsString}`
+
+  return fetch(fullUrl, {
     method,
-    body: JSON.stringify(data),
+    body: data ? JSON.stringify(data) : undefined,
     ...restConfig
   }).then(res => res.json())
 }
@@ -111,7 +95,7 @@ function request<T extends RouteName>(config: GetConfig<Schema, T, FetchParams>)
 request({
   name: 'PATCH /users/:id',
   pathParams: {
-    id: ''
+    id: '1'
   },
   data: {},
 }).then((res) => res.id)

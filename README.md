@@ -102,6 +102,7 @@ export const schema = {
       id: string;
       title: string;
       content: string;
+      updatedAt: string;
     }
   }
 }
@@ -120,15 +121,16 @@ import { schema } from './schema'
 
 type Schema = typeof schema
 type RequestName = keyof Schema
-type RequestConfig<T> = Input<T, Schema, AxiosRequestConfig>
-type RequestOutput<T> = AxiosPromise<Output<T, Schema>>
+type ExtraConfig = AxiosRequestConfig
+type RequestConfig<T> = Input<T, Schema, ExtraConfig>
+type RequestOutput<T, X extends void> = AxiosPromise<Output<T, Schema>>
 
 function request<T extends RequestName>(config: RequestConfig<T>): RequestOutput<T> {
   const { name, pathParams, queryParams, data, ...restConfig } = config
   const { url, method } = apiSchema[name]
   const urlWithPathParams = (typeof url === 'function' && pathParams)
     ? url(pathParams)
-    : url
+    : url as string
 
   return axios.request({
     url: urlWithPathParams,
