@@ -82,13 +82,14 @@ describe('TypeScript def schema', () => {
       queryParams: null,
     })
 
-    // // should failed: queryParams
-    // request({
-    //  name: 'test_1',
-    //   queryParams: {
-    //     page: '1'
-    //   }
-    // })
+    // should failed: queryParams
+    request({
+     name: 'test_1',
+      // @ts-expect-error
+      queryParams: {
+        page: '1'
+      }
+    })
 
     // should works
     request({
@@ -110,42 +111,47 @@ describe('TypeScript def schema', () => {
     })
 
     // should failed: method not expected
-    // request({
-    //   name: 'test_2',
-    //   queryParams: {
-    //     page: '1'
-    //   },
-    //   method: 'GET',
-    //   headers: {
-    //     foo: 'bar'
-    //   },
-    // })
+    request({
+      name: 'test_2',
+      queryParams: {
+        page: '1'
+      },
+      // @ts-expect-error
+      method: 'GET',
+      headers: {
+        foo: 'bar'
+      },
+    })
 
-    // // should failed: queryParams missing
-    // request({
-    //  name: 'test_2',
-    // })
+    // should failed: queryParams missing
+    // @ts-expect-error
+    request({
+     name: 'test_2',
+    })
     
-    // // should failed: queryParams empty
-    // request({
-    //  name: 'test_2',
-    //   queryParams: {}
-    // })
+    // should failed: queryParams empty
+    request({
+     name: 'test_2',
+      // @ts-expect-error
+      queryParams: {}
+    })
 
-    // // should failed: queryParams empty
-    // request({
-    //  name: 'test_2',
-    //   queryParams: null
-    // })
+    // should failed: queryParams empty
+    request({
+     name: 'test_2',
+      // @ts-expect-error
+      queryParams: null
+    })
 
-    // // should failed: pageSize not expected
-    // request({
-    //  name: 'test_2',
-    //   queryParams: {
-    //     page: '1',
-    //     pageSize: 2,
-    //   }
-    // })
+    // should failed: pageSize not expected
+    request({
+     name: 'test_2',
+      queryParams: {
+        page: '1',
+        // @ts-expect-error
+        pageSize: 2,
+      }
+    })
 
     // should works
     request({
@@ -173,13 +179,14 @@ describe('TypeScript def schema', () => {
     })
 
     // should failed: pageSize not expected
-    // request({
-    //  name: 'test_3',
-    //   queryParams: {
-    //     page: '1',
-    //     pageSize: '2'
-    //   }
-    // })
+    request({
+     name: 'test_3',
+      queryParams: {
+        page: '1',
+        // @ts-expect-error
+        pageSize: '2'
+      }
+    })
 
     // should works
     request({
@@ -200,20 +207,22 @@ describe('TypeScript def schema', () => {
       }
     })
     
-    // // should failed: queryParams.page required
-    // request({
-    //  name: 'test_4',
-    //   queryParams: {}
-    // })
+    // should failed: queryParams.page required
+    request({
+     name: 'test_4',
+      // @ts-expect-error
+      queryParams: {}
+    })
 
-    // // should failed: queryParams.pageSize not expected
-    // request({
-    //  name: 'test_4',
-    //   queryParams: {
-    //     page: '1',
-    //     pageSize: '2'
-    //   }
-    // })
+    // should failed: queryParams.pageSize not expected
+    request({
+     name: 'test_4',
+      queryParams: {
+        page: '1',
+        // @ts-expect-error
+        pageSize: '2'
+      }
+    })
 
     // should works
     request({
@@ -226,11 +235,12 @@ describe('TypeScript def schema', () => {
       queryParams: null
     })
 
-    // // should failed: queryParams not expected
-    // request({
-    //  name: 'test_5',
-    //   queryParams: {}
-    // })
+    // should failed: queryParams not expected
+    request({
+      name: 'test_5',
+      // @ts-expect-error
+      queryParams: {}
+    })
 
     // should works
     request({
@@ -243,11 +253,12 @@ describe('TypeScript def schema', () => {
       pathParams: null
     })
 
-    // // should failed: pathParams not expected
-    // request({
-    //  name: 'test_6',
-    //   pathParams: {}
-    // })
+    // should failed: pathParams not expected
+    request({
+      name: 'test_6',
+      // @ts-expect-error
+      pathParams: {}
+    })
 
     // should works
     request({
@@ -257,30 +268,34 @@ describe('TypeScript def schema', () => {
       }
     })
 
-    // // should failed: pathParams.id expected to be a string
-    // request({
-    //   name: 'test_7',
-    //   pathParams: {
-    //     id: 2
-    //   }
-    // })
+    // should failed: pathParams.id expected to be a string
+    request({
+      name: 'test_7',
+      pathParams: {
+        // @ts-expect-error
+        id: 2
+      }
+    })
 
-    // // should failed: pathParams required
-    // request({
-    //   name: 'test_7',
-    // })
+    // should failed: pathParams required
+    // @ts-expect-error
+    request({
+      name: 'test_7',
+    })
 
-    // // should failed: pathParams required
-    // request({
-    //   name: 'test_7',
-    //   pathParams: null
-    // })
+    // should failed: pathParams required
+    request({
+      name: 'test_7',
+      // @ts-expect-error
+      pathParams: null
+    })
 
-    // // should failed: pathParams.id required
-    // request({
-    //   name: 'test_7',
-    //   pathParams: {}
-    // })
+    // should failed: pathParams.id required
+    request({
+      name: 'test_7',
+      // @ts-expect-error
+      pathParams: {}
+    })
 
     // should works
     request({
@@ -292,14 +307,15 @@ describe('TypeScript def schema', () => {
       const data = res.username;
     })
 
-    // // should failed: email in response not defined
-    // request({
-    //  name: 'test_8',
-    //  pathParams: {
-    //     id: '2'
-    //   }
-    // }).then(res => {
-    //   const data = res.email;
-    // })
+    // should failed: email in response not defined
+    request({
+     name: 'test_8',
+     pathParams: {
+        id: '2'
+      }
+    }).then(res => {
+      // @ts-expect-error
+      const data = res.email;
+    })
   })
 })
