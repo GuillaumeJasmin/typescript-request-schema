@@ -1,4 +1,4 @@
-import { validSchema, Input, Output } from './lib'
+import { validSchema, Config, Response } from './lib'
 
 const schema = {
   'GET /users': {
@@ -68,10 +68,10 @@ validSchema(schema)
 type Schema = typeof schema
 type RequestName = keyof Schema
 type ExtraConfig = NonNullable<Parameters<typeof fetch>[1]>
-type RequestConfig<T extends RequestName> = Input<T, Schema, ExtraConfig>
-type RequestOutput<T extends RequestName> = Promise<Output<T, Schema>>
+type RequestConfig<T extends RequestName> = Config<T, Schema, ExtraConfig>
+type RequestResponse<T extends RequestName> = Promise<Response<T, Schema>>
 
-function request<T extends RequestName>(config: RequestConfig<T>): RequestOutput<T> {
+function request<T extends RequestName>(config: RequestConfig<T>): RequestResponse<T> {
   const { name, data, queryParams, pathParams, ...restConfig } = config
   const { url, method } = schema[name]
 

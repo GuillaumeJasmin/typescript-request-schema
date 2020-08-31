@@ -116,16 +116,16 @@ Now, let's build our request function:
 
 ```js
 import { AxiosRequestConfig, AxiosPromise } from 'axios'
-import { Input, Output } from 'typescript-rest-schema'
+import { Config, Response } from 'typescript-rest-schema'
 import { schema } from './schema'
 
 type Schema = typeof schema
 type RequestName = keyof Schema
 type ExtraConfig = AxiosRequestConfig
-type RequestConfig<T> = Input<T, Schema, ExtraConfig>
-type RequestOutput<T, X extends void> = AxiosPromise<Output<T, Schema>>
+type RequestConfig<T extends RequestName> = Config<T, Schema, ExtraConfig>
+type RequestResponse<T extends RequestName> = AxiosPromise<Response<T, Schema>>
 
-function request<T extends RequestName>(config: RequestConfig<T>): RequestOutput<T> {
+function request<T extends RequestName>(config: RequestConfig<T>): RequestResponse<T> {
   const { name, pathParams, queryParams, data, ...restConfig } = config
   const { url, method } = apiSchema[name]
   const urlWithPathParams = (typeof url === 'function' && pathParams)
@@ -146,8 +146,8 @@ Now, your `request` function is fully typed !
 
 ## API
 
-* `Input<RequestName, Schema, ExtraConfig>`
-* `Output<RequestName, Schema>`
+* `Config<RequestName, Schema, ExtraConfig>`
+* `Response<RequestName, Schema>`
 
 ## IntelliSense examples
 

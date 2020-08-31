@@ -1,1 +1,1 @@
-export { Input, Output, validSchema } from './lib'
+export { Config, Response, validSchema } from './lib'

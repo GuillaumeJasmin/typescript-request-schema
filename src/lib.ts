@@ -45,7 +45,7 @@ interface InputConfig<Conf extends ConfInterface> {
   [key: string]: InputConfigItem<Conf>
 }
 
-export type Input<
+export type Config<
   SchemaKeys extends keyof Schema,
   Schema extends InputConfig<UserConf>,
   OtherProperties,
@@ -65,6 +65,6 @@ export type Input<
         | UserConf['MethodKey']
       >
 
-export type Output<RouteName extends string, TSchema extends {[key: string]: any}> = TSchema[RouteName]['response']
+export type Response<RouteName extends string, TSchema extends {[key: string]: any}> = TSchema[RouteName]['response']
 
 export function validSchema(item: InputConfig<DefaultConf>) {}
