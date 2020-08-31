@@ -1,6 +1,6 @@
 <div align="center">
   <h1>
-    TypeScript Object Schema
+    TS REST Schema
     <br/>
     <br/>
   </h1>
@@ -11,7 +11,7 @@
   <br/>
   <br/>
   <br/>
-  Use the powerful of TypeScript Intellisense<br/>
+  It's time to type your HTTP request<br/>
   <br/>
   <br/>
   <pre>npm i <a href="https://www.npmjs.com/package/typescript-object-schema">typescript-object-schema</a></pre>
@@ -20,7 +20,6 @@
 </div>
 
 * [Motivation](#motivation)
-* [Tutorial](#tutorial)
 * [Code examples](#examples)
   * [fetch](#fetch)
   * [axios](#examples)
@@ -29,145 +28,128 @@
 
 ## Motivation
 
-TypeScript is a powerful assistant when your are developping, with autocomplete suggestion and complilation errors. I made some utils to define a schema object and then avoid to always import types or interfaces if your shema doesn't change.
+API request have always the same data type: `url`, `method`, `query params`, `body`, and `response`. This package aim to easily define their types and default params.
 
-## Tutorial
-
-My use case come from HTTP request pattern. Our REST API schema is always the same and can be define in one place in the application. Let's see our requirement for make HTTP request:
-
-- the request need an `url` to work correctly.
-- the request have a specific `method`, like GET, POST, PATCH...
-- the url can contain `path params`, like a resource id.
-- the url can contain `query params`, like a pagination
-- the request can contain `data` (or `body`)
-- the request contain a `response`, with always the same data types
-
-Some of these data are dynamics, and others never change. `url` and `method` never change, while `path params`, `query params`, `data` and `response` depends on the context.
-
-Let's define our schema:
-
-```ts
-const schema = {
-  'PATCH users/:id': {
-    url: (pathParams: { id: string }) => `users/${pathParams.id}`,
-    method: 'PATCH',
-    queryParams: null,
-    data: {} as {
-      username?: string,
-      email?: string
-    },
-    response: {} as {
-      id: string,
-      username: string,
-      email: string
-    }
-  },
-}
-```
-
-*Wait, what is that object ? Is a plain JavaScript object or a TypeScript definition ?*
-
-It's both !
-
-Technicaly, it's a plain JavaScript object, but it's also used as TypeScript definition for some keys with the powerful of `as` TypeScript keyword.
-
-Now, let's build a `request()` function, base on native `fetch` browser:
+Let's take an common request example:
 
 ```js
-import queryString from 'query-string'
+import axios from 'axios'
 
-function request(config) {
-  const {
-    url,
-    method,
-    data,
-    queryParams,
-    ...restConfig
-  } = config
-
-  const baseURL = 'https://api.com'
-  const queryParamsStr = queryString.stringify(queryParams)
-  let fullURL = `${baseURL}/${url}`
-  if (Object.keys(queryParamsStr).length) {
-    fullURL += `?${queryParamsStr}`
-  }
-
-  return fetch(fullURL, {
-    method,
-    body: JSON.stringify(data),
-    ...restConfig
-  }).then(res => res.json())
+interface Article {
+  ...
 }
-```
 
-It's a very basic function with some data handling, like stringify `query params` and `data`, concat `baseURL` and return a promise with plain JavaScript object.
-
-Currently, TypeScript doesn't know anything about the request schema. It could be usefull if TS can autocomplete config data depends on the request ?
-
-`typescript-object-schema` provide 2 utils types to build a powerfull config schema:
-
-```js
-import { GetConfig, GetOutput } from 'typescript-object-schema'
-```
-
-```ts
-type Schema = typeof shema
-type RouteName = keyof Schema
-type FetchParams = NonNullable<Parameters<typeof fetch>[1]>
-
-function request<T extends RouteName>(config: GetConfig<Schema, T, FetchParams>): Promise<GetOutput<T, Schema>> {
-  const {
-    name,
-    pathParams,
-    data,
-    queryParams = {},
-    ...restConfig
-  } = config
-
-  const {
-    url,
-    method,
-    queryParams: defaultQueryParams
-  } = apiSchema[name]
-
-  const finalQueryParams = {
-    ...defaultQueryParams,
-    ...queryParams,
-  }
-
-  const urlWithPathParams = typeof url === 'function' && pathParams
-    ? url(pathParams)
-    : url
-
-  const baseURL = 'https://api.com'
-  const queryParamsStr = queryString.stringify(finalQueryParams)
-  let fullURL = `${baseURL}/${urlWithPathParams}`
-  if (Object.keys(queryParamsStr).length) {
-    fullURL += `?${queryParamsStr}`
-  }
-
-  return fetch(fullURL, {
-    method,
-    body: JSON.stringify(data),
-    ...restConfig
-  }).then(res => res.json())
-}
-```
-
-Now TypeScript can infer and automcomplete the config and response.
-
-Usages:
-
-```ts
-const updatedUser = await request({
-  name: 'PATCH users/:id',
+const article = await axios.request<Article>({
+  url: `http://api.com/articles/${id}?accessToken=${token}`,
+  method: 'PATCH',
   data: {
-    email: '...',
+    title: 'new title'
   }
 })
 ```
 
+**Issues:**
+
+- need to typed the return data on the fly
+- no types for path params
+- no type for query params
+- no type for data
+
+I use axios for the example, but it's the same for fetch(), or maybe others request libraries.
+
+*Note*: in a real world, `accessToken` is not define here, but you got it.
+
+## Proposal
+
+Now, imagine a `request` method, fully typed, without need to define type on the fly:
+
+```js
+const article = await request({
+  name: 'updateArticle',
+  pathParams: {
+    id: '...'
+  },
+  queryParams: {
+    accessToken: '...'
+  },
+  data: {
+    title: 'new title'
+  }
+})
+```
+
+If you have already work with TypeScript and GraphQL, you know what I am talking about, your API is fully typed thanks to tools like [graphql-code-generator](https://github.com/dotansimha/graphql-code-generator).  
+
+But when you work with a REST API, you haven't always auto generated TS interfaces.
+
+## Schema
+
+Let's go to define our schema:
+
+```ts
+export const schema = {
+  updateArticle: {
+    url: (pathParams: { id: string; }) => `articles/${pathParams.id}`,
+    method: 'PATCH',
+    queryParams: {} as {
+      accessToken: string;
+    },
+    data: {} as {
+      title?: string;
+      content?: string;
+    },
+    response: {} as {
+      id: string;
+      title: string;
+      content: string;
+    }
+  }
+}
+```
+
+This object schema will be used as plain JavaScript object and TypeScript definition, thanks to `as` keyword
+
+## Request
+
+Now, let's build our request function:
+
+```js
+import { AxiosRequestConfig, AxiosPromise } from 'axios'
+import { Input, Output } from 'typescript-rest-schema'
+import { schema } from './schema'
+
+type Schema = typeof schema
+type RequestName = keyof Schema
+type RequestConfig<T> = Input<T, Schema, AxiosRequestConfig>
+type RequestOutput<T> = AxiosPromise<Output<T, Schema>>
+
+function request<T extends RequestName>(config: RequestConfig<T>): RequestOutput<T> {
+  const { name, pathParams, queryParams, data, ...restConfig } = config
+  const { url, method } = apiSchema[name]
+  const urlWithPathParams = (typeof url === 'function' && pathParams)
+    ? url(pathParams)
+    : url
+
+  return axios.request({
+    url: urlWithPathParams,
+    method,
+    data,
+    params: queryParams,
+    ...restConfig
+  })
+}
+```
+
+Now, your `request` function is fully typed !
+
+## API
+
+* `Input<RequestName, Schema, ExtraConfig>`
+* `Output<RequestName, Schema>`
+
 ## IntelliSense examples
+
+*Note*: on the following screen shots, request names are not the same than the previous examples. You can use any name format for your resquest name.
 
 * `name`  
 ![Name](./img/name.png)
