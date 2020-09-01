@@ -1,4 +1,4 @@
-import { Config, Response, validateSchema } from './lib'
+import { Config, Response, validateSchema } from '.'
 
 const schema = {
   'test_1': {
