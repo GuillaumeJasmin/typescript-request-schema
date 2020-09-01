@@ -67,4 +67,4 @@ export type Config<
 
 export type Response<RouteName extends string, TSchema extends {[key: string]: any}> = TSchema[RouteName]['response']
 
-export function validateSchema(item: InputConfig<DefaultConf>) {}
+export function validateSchema<Conf extends ConfInterface = DefaultConf>(item: InputConfig<Conf>) {}

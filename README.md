@@ -20,64 +20,24 @@
 </div>
 
 * [Motivation](#motivation)
-* [Examples](#examples)
+* [Quick example](#quick-example)
+* [Full example with window.fetch](#full-example-with-windowfetch)
 * [API](#API)
 * [IntelliSense examples](#intellisense-examples)
-* [Things to know](#things-to-know)
+* [Advanced config](#advanced-config)
 
 ## Motivation
 
 API request have always the same data type: `url`, `method`, `query params`, `body`, and `response`. This package aim to easily define their types.
 
-Let's take an common request example:
+# Quick example
 
 ```js
-interface Article {}
+import { Config, Response } from 'typescript-request-schema'
 
-const article: Article = await fetch(`http://api.com/articles/${id}?accessToken=${token}`, {
-  method: 'PATCH',
-  body: JSON.stringify({ title: 'new title' })
-})
-```
-
-**Issues:**
-
-- need to typed the return data on the fly
-- no types for path params
-- no type for query params
-- no type for data
-
-## Examples
-
-Now, imagine a `request` method, fully typed, without need to define type on the fly:
-
-```js
-const article = await request({
-  name: 'updateArticle',
-  pathParams: {
-    id: '...'
-  },
-  queryParams: {
-    accessToken: '...'
-  },
-  data: {
-    title: 'new title'
-  }
-})
-```
-
-If you have already work with TypeScript and GraphQL, you know what I am talking about, your API is fully typed thanks to tools like [graphql-code-generator](https://github.com/dotansimha/graphql-code-generator).  
-
-But when you work with a REST API, you haven't always auto generated TS interfaces.
-
-### Schema
-
-Let's go to define our schema:
-
-```ts
-export const schema = {
+const schema = {
   updateArticle: {
-    url: (pathParams: { id: string; }) => `articles/${pathParams.id}`,
+    url: (pathParams: { id: string; }) => `/articles/${pathParams.id}`,
     method: 'PATCH',
     queryParams: {} as {
       accessToken: string;
@@ -94,47 +54,94 @@ export const schema = {
     }
   }
 }
-```
-
-This object schema will be used as plain JavaScript object and TypeScript definition, thanks to `as` keyword.
-
-`queryParams`, `data` and `response` are only use as TypeScript type.
-
-### Request
-
-Now, let's build our request function:
-
-```js
-import { AxiosRequestConfig, AxiosPromise } from 'axios'
-import { Config, Response } from 'typescript-request-schema'
-import { schema } from './schema'
 
 type Schema = typeof schema
 type RequestName = keyof Schema
-type ExtraConfig = AxiosRequestConfig
+type ExtraConfig = { ... }
 type RequestConfig<T extends RequestName> = Config<T, Schema, ExtraConfig>
-type RequestResponse<T extends RequestName> = AxiosPromise<Response<T, Schema>>
+type RequestResponse<T extends RequestName> = Promise<Response<T, Schema>>
 
 function request<T extends RequestName>(config: RequestConfig<T>): RequestResponse<T> {
-  const { name, pathParams, queryParams, data, ...restConfig } = config
-  const { url, method } = apiSchema[name]
-  const urlWithPathParams = (typeof url === 'function' && pathParams)
-    ? url(pathParams)
-    : url as string
+  const { name, data, queryParams, pathParams, ...restConfig } = config
+  const { url, method } = schema[name]
 
-  return axios.request({
-    url: urlWithPathParams,
-    method,
-    data,
-    params: queryParams,
-    ...restConfig
-  })
+  ...
 }
+
+const article = await request({
+  name: 'updateArticle',
+  pathParams: {
+    id: '...'
+  },
+  queryParams: {
+    accessToken: '...'
+  },
+  data: {
+    title: '...'
+  }
+})
 ```
 
-Now, your `request` function is fully typed !
+It's up to you to create your own request implementation.
+
+`queryParams`, `data` and `response` are only use as TypeScript type thanks to `as` keyword.
+
+## Full example with window.fetch
 
 ```js
+import { Config, Response, validateSchema } from 'typescript-request-schema'
+import { schema } from './schema'
+
+export const schema = {
+  updateArticle: {
+    url: (pathParams: { id: string; }) => `/articles/${pathParams.id}`,
+    method: 'PATCH',
+    queryParams: {} as {
+      accessToken: string;
+    },
+    data: {} as {
+      title?: string;
+      content?: string;
+    },
+    response: {} as {
+      id: string;
+      title: string;
+      content: string;
+      updatedAt: string;
+    }
+  }
+}
+
+validateSchema(schema) // only use as TS checker
+
+type Schema = typeof schema
+type RequestName = keyof Schema
+type ExtraConfig = NonNullable<Parameters<typeof fetch>[1]>
+type RequestConfig<T extends RequestName> = Config<T, Schema, ExtraConfig>
+type RequestResponse<T extends RequestName> = Promise<Response<T, Schema>>
+
+function request<T extends RequestName>(config: RequestConfig<T>): RequestResponse<T> {
+  const { name, data, queryParams, pathParams, ...restConfig } = config
+  const { url, method } = schema[name]
+
+  const urlWithPathParams = (typeof url === 'function' && pathParams)
+    ? url(pathParams)
+    : url
+
+  const queryParamsAsString = Object.entries(queryParams || {})
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&')
+
+  const baseUrl = 'http://api.website.com'
+  const fullUrl = `${baseUrl}${urlWithPathParams}?${queryParamsAsString}`
+
+  return fetch(fullUrl, {
+    method,
+    body: data ? JSON.stringify(data) : undefined,
+    ...restConfig
+  }).then(res => res.json())
+}
+
 const article = await request({
   name: 'updateArticle',
   pathParams: {
@@ -149,6 +156,40 @@ const article = await request({
 })
 ```
 
+## with axios ?
+
+It's up to you to define your own `request` implementation, so you can use any request library.
+
+```js
+import axios, { AxiosRequestConfig, AxiosPromise } from 'axios'
+
+...
+
+type Schema = typeof schema
+type RequestName = keyof Schema
+type ExtraConfig = AxiosRequestConfig
+type RequestConfig<T extends RequestName> = Config<T, Schema, ExtraConfig>
+type RequestResponse<T extends RequestName> = AxiosPromise<Response<T, Schema>>
+
+function request<T extends RequestName>(config: RequestConfig<T>): RequestResponse<T> {
+  const { name, data, queryParams, pathParams, ...restConfig } = config
+  const { url, method } = schema[name]
+
+  const urlWithPathParams = (typeof url === 'function' && pathParams)
+    ? url(pathParams)
+    : url
+
+  const baseUrl = 'http://api.website.com'
+
+  return axios.request({
+    url: `${baseUrl}${urlWithPathParams}`,
+    method,
+    params: queryParams,
+    data,
+  })
+}
+```
+
 ## API
 
 * `Config<RequestName, Schema, ExtraConfig>`
@@ -157,25 +198,46 @@ const article = await request({
 
 ## IntelliSense examples
 
-*Note*: on the following screen shots, request names are not the same than the previous examples. You can use any name format for your resquest name.
-
 * `name`  
-![Name](./img/name.png)
+<img src="./img/name.png" alt="name" width="500" />
 
-* `data`  
-![Data](./img/data.png)
+* `pathParams`  
+<img src="./img/pathParams.png" alt="name" width="500" />
 
 * `queryParams`  
-![queryParams](./img/queryParams.png)
+<img src="./img/queryParams.png" alt="name" width="500" />
+
+* `data`  
+<img src="./img/data.png" alt="name" width="500" />
 
 * `response`  
-![Response](./img/response.png)
+<img src="./img/response.png" alt="name" width="500" />
 
-* `othersProperties`  
-![Response](./img/othersProperties.png)
+* `extraProperties`  
+<img src="./img/extraProperties.png" alt="name" width="500" />
 
-## Things to know
+## Advanced config
 
-### Schema keys names
+You can change the key of each properties
 
-Each keys of the `schema` object can be named like you want. In examples, names are `GET users`, `GET users/:id`, but you can named it `GET_users`, `users get`, `retrieve users`, `update users/id`, etc. Keys are use by TypeScript to find the correct route schema, so it's completely arbitrary. TypeScript will autocomplete keys for you, so even with a complicated format like `GET users/:id`, you don't have to remember it.
+```js
+interface Conf {
+  RouteNameKey: 'name';
+  PathParamsKey: 'pathParams';
+  QueryParamsKey: 'queryParams';
+  URLKey: 'url';
+  DataKey: 'data';
+  ResponseKey: 'response';
+  MethodKey: 'method';
+}
+
+const schema = {
+  ...
+}
+
+validateSchema<Conf>(schema)
+
+...
+
+type RequestConfig<T extends RequestName> = Config<T, Schema, ExtraConfig, Conf>
+```

@@ -68,8 +68,6 @@ const schema = {
   },
 }
 
-validateSchema(schema)
-
 validateSchema({
   // should failed: url required
   // @ts-expect-error
@@ -97,6 +95,8 @@ validateSchema({
   },
 })
 
+validateSchema(schema)
+
 type Schema = typeof schema
 type RequestName = keyof Schema
 type ExtraConfig = NonNullable<Parameters<typeof fetch>[1]>
@@ -115,9 +115,10 @@ function request<T extends RequestName>(config: RequestConfig<T>): RequestRespon
     .map(([key, value]) => `${key}=${value}`)
     .join('&')
 
-  const fullUrl = `${urlWithPathParams}?${queryParamsAsString}`
+  const baseUrl = 'http://api.website.com'
+  const fullUrl = `${baseUrl}${urlWithPathParams}?${queryParamsAsString}`
 
-  // return fetch(urlWithPathParams, {
+  // return fetch(fullUrl, {
   //   method,
   //   body: data ? JSON.stringify(data) : undefined,
   //   ...restConfig
