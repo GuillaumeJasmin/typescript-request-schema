@@ -1,5 +1,5 @@
 {
-  "name": "typescript-object-schema",
+  "name": "typescript-request-schema",
   "version": "2.0.0-beta.2",
   "description": "",
   "main": "build/index.js",
@@ -22,10 +22,10 @@
   },
   "author": "Guillaume Jasmin",
   "license": "MIT",
-  "homepage": "https://github.com/guillaumejasmin/typescript-object-schema",
+  "homepage": "https://github.com/guillaumejasmin/typescript-request-schema",
   "repository": {
     "type": "git",
-    "url": "git@github.com:guillaumejasmin/typescript-object-schema.git"
+    "url": "git@github.com:guillaumejasmin/typescript-request-schema.git"
   },
   "files": [
     "build"

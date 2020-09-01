@@ -1,50 +1,42 @@
 <div align="center">
   <h1>
-    TS REST Schema
+    TypeScript Request Schema
     <br/>
     <br/>
   </h1>
   <br/>
-  <a href="https://www.npmjs.com/package/typescript-object-schema">
-    <img src="https://img.shields.io/npm/v/typescript-object-schema.svg" alt="npm package" />
+  <a href="https://www.npmjs.com/package/typescript-request-schema">
+    <img src="https://img.shields.io/npm/v/typescript-request-schema.svg" alt="npm package" />
   </a>
   <br/>
   <br/>
   <br/>
-  It's time to type your HTTP request<br/>
+  It's time to type your HTTP requests<br/>
   <br/>
   <br/>
-  <pre>npm i <a href="https://www.npmjs.com/package/typescript-object-schema">typescript-object-schema</a></pre>
+  <pre>npm i <a href="https://www.npmjs.com/package/typescript-request-schema">typescript-request-schema</a></pre>
   <br/>
   <br/>
 </div>
 
 * [Motivation](#motivation)
-* [Code examples](#examples)
-  * [fetch](#fetch)
-  * [axios](#examples)
+* [Examples](#examples)
+* [API](#API)
 * [IntelliSense examples](#intellisense-examples)
 * [Things to know](#things-to-know)
 
 ## Motivation
 
-API request have always the same data type: `url`, `method`, `query params`, `body`, and `response`. This package aim to easily define their types and default params.
+API request have always the same data type: `url`, `method`, `query params`, `body`, and `response`. This package aim to easily define their types.
 
 Let's take an common request example:
 
 ```js
-import axios from 'axios'
+interface Article {}
 
-interface Article {
-  ...
-}
-
-const article = await axios.request<Article>({
-  url: `http://api.com/articles/${id}?accessToken=${token}`,
+const article: Article = await fetch(`http://api.com/articles/${id}?accessToken=${token}`, {
   method: 'PATCH',
-  data: {
-    title: 'new title'
-  }
+  body: JSON.stringify({ title: 'new title' })
 })
 ```
 
@@ -55,11 +47,7 @@ const article = await axios.request<Article>({
 - no type for query params
 - no type for data
 
-I use axios for the example, but it's the same for fetch(), or maybe others request libraries.
-
-*Note*: in a real world, `accessToken` is not define here, but you got it.
-
-## Proposal
+## Examples
 
 Now, imagine a `request` method, fully typed, without need to define type on the fly:
 
@@ -82,7 +70,7 @@ If you have already work with TypeScript and GraphQL, you know what I am talking
 
 But when you work with a REST API, you haven't always auto generated TS interfaces.
 
-## Schema
+### Schema
 
 Let's go to define our schema:
 
@@ -108,15 +96,17 @@ export const schema = {
 }
 ```
 
-This object schema will be used as plain JavaScript object and TypeScript definition, thanks to `as` keyword
+This object schema will be used as plain JavaScript object and TypeScript definition, thanks to `as` keyword.
 
-## Request
+`queryParams`, `data` and `response` are only use as TypeScript type.
+
+### Request
 
 Now, let's build our request function:
 
 ```js
 import { AxiosRequestConfig, AxiosPromise } from 'axios'
-import { Config, Response } from 'typescript-rest-schema'
+import { Config, Response } from 'typescript-request-schema'
 import { schema } from './schema'
 
 type Schema = typeof schema
@@ -144,10 +134,26 @@ function request<T extends RequestName>(config: RequestConfig<T>): RequestRespon
 
 Now, your `request` function is fully typed !
 
+```js
+const article = await request({
+  name: 'updateArticle',
+  pathParams: {
+    id: '...'
+  },
+  queryParams: {
+    accessToken: '...'
+  },
+  data: {
+    title: 'new title'
+  }
+})
+```
+
 ## API
 
 * `Config<RequestName, Schema, ExtraConfig>`
 * `Response<RequestName, Schema>`
+* `validSchema()` - use for TS check
 
 ## IntelliSense examples
 
