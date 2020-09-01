@@ -1,4 +1,4 @@
-import { Config, Response, validSchema } from '../lib'
+import { Config, Response, validateSchema } from './lib'
 
 const schema = {
   'test_1': {
@@ -68,9 +68,9 @@ const schema = {
   },
 }
 
-validSchema(schema)
+validateSchema(schema)
 
-validSchema({
+validateSchema({
   // should failed: url required
   // @ts-expect-error
   'test_1': {

@@ -1,1 +1,1 @@
-export { Config, Response, validSchema } from './lib'
+export { Config, Response, validateSchema } from './lib'
