@@ -153,7 +153,7 @@ const article = await request({
 
 * `Config<RequestName, Schema, ExtraConfig>`
 * `Response<RequestName, Schema>`
-* `validSchema()` - use for TS check
+* `validateSchema()` - use for TS check
 
 ## IntelliSense examples
 
