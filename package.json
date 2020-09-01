@@ -15,9 +15,9 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@types/jest": "^24.0.23",
-    "jest": "^24.9.0",
-    "ts-jest": "^24.1.0",
+    "@types/jest": "^26.0.12",
+    "jest": "^26.4.2",
+    "ts-jest": "^26.3.0",
     "typescript": "^4.0.2"
   },
   "author": "Guillaume Jasmin",
