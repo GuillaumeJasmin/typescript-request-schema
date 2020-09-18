@@ -32,7 +32,7 @@ API request have always the same data type: `url`, `method`, `query params`, `bo
 
 # Quick example
 
-```js
+```ts
 import { Config, Response } from 'typescript-request-schema'
 
 const schema = {
@@ -88,7 +88,7 @@ It's up to you to create your own request implementation.
 
 ## Full example with window.fetch
 
-```js
+```ts
 import { Config, Response, validateSchema } from 'typescript-request-schema'
 import { schema } from './schema'
 
@@ -160,7 +160,7 @@ const article = await request({
 
 It's up to you to define your own `request` implementation, so you can use any request library.
 
-```js
+```ts
 import axios, { AxiosRequestConfig, AxiosPromise } from 'axios'
 
 ...
@@ -220,7 +220,7 @@ function request<T extends RequestName>(config: RequestConfig<T>): RequestRespon
 
 You can change the key of each properties
 
-```js
+```ts
 interface Conf {
   RouteNameKey: 'name';
   PathParamsKey: 'pathParams';
